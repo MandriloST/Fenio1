@@ -1,0 +1,99 @@
+@page "/admin/circuits"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@inject Fenio1.UI.Services.ApiService Api
+
+<PageTitle>Staze – Admin</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">📍 Staze</h4>
+    <button class="btn btn-danger btn-sm" @onclick="() => _showCreate = !_showCreate">+ Nova staza</button>
+</div>
+
+@if (_showCreate)
+{
+    <div class="card fenio-card mb-4">
+        <div class="card-header fw-bold">Nova staza</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Naziv staze</label>
+                    <input class="form-control fenio-input" @bind="_new.Name" placeholder="npr. Circuit de Monaco" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Lokacija</label>
+                    <input class="form-control fenio-input" @bind="_new.Location" placeholder="npr. Monte Carlo" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Država</label>
+                    <input class="form-control fenio-input" @bind="_new.Country" placeholder="npr. Monaco" />
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">ISO</label>
+                    <input class="form-control fenio-input" @bind="_new.CountryCode" maxlength="2" placeholder="MC" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Krugova</label>
+                    <input type="number" class="form-control fenio-input" @bind="_new.LapCount" min="1" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Duljina (km)</label>
+                    <input type="number" step="0.001" class="form-control fenio-input" @bind="_new.LengthKm" min="1" />
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-danger" @onclick="CreateAsync">Spremi</button>
+                <button class="btn btn-outline-secondary" @onclick="() => _showCreate = false">Odustani</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_loading)
+{
+    <div class="text-center py-4"><div class="spinner-border text-danger"></div></div>
+}
+else
+{
+    <div class="card fenio-card">
+        <div class="card-body p-0">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr><th>Naziv</th><th>Lokacija</th><th>Država</th><th class="text-end">Krugova</th><th class="text-end">km</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in _circuits)
+                    {
+                        <tr>
+                            <td class="fw-bold">@c.Name</td>
+                            <td>@c.Location</td>
+                            <td><span class="badge bg-secondary">@c.CountryCode</span> @c.Country</td>
+                            <td class="text-end">@c.LapCount</td>
+                            <td class="text-end">@c.LengthKm km</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Models.CircuitDto> _circuits = new();
+    private Models.CreateCircuitRequest _new = new();
+    private bool _loading = true, _showCreate;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _circuits = await Api.GetCircuitsAsync();
+        _loading = false;
+    }
+
+    private async Task CreateAsync()
+    {
+        var result = await Api.CreateCircuitAsync(_new);
+        if (result != null) { _showCreate = false; _new = new(); await LoadAsync(); }
+    }
+}

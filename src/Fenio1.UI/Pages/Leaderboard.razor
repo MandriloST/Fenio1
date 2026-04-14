@@ -1,0 +1,57 @@
+@page "/leaderboard"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject Fenio1.UI.Services.ApiService Api
+
+<PageTitle>Leaderboard – Fenio1</PageTitle>
+
+<h4 class="fw-bold mb-4">🏆 Leaderboard</h4>
+
+@if (_loading)
+{
+    <div class="text-center py-5"><div class="spinner-border text-danger"></div></div>
+}
+else if (_entries.Count == 0)
+{
+    <div class="alert alert-secondary">Nema podataka za leaderboard. Igrači trebaju unijeti prognoze.</div>
+}
+else
+{
+    <div class="card fenio-card">
+        <div class="card-body p-0">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:60px">Poz</th>
+                        <th>Korisnik</th>
+                        <th class="text-end">Ukupno bodova</th>
+                        <th class="text-end">Utrke</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in _entries)
+                    {
+                        <tr class="@(e.Position <= 3 ? "table-active" : "")">
+                            <td class="fw-bold fs-5">
+                                @(e.Position == 1 ? "🥇" : e.Position == 2 ? "🥈" : e.Position == 3 ? "🥉" : $"{e.Position}.")
+                            </td>
+                            <td class="fw-bold">@e.Username</td>
+                            <td class="text-end text-warning fw-bold fs-5">@e.TotalPoints</td>
+                            <td class="text-end text-muted">@e.RacesParticipated</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Models.LeaderboardEntryDto> _entries = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _entries = await Api.GetActiveLeaderboardAsync();
+        _loading = false;
+    }
+}

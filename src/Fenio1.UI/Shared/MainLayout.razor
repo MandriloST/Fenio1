@@ -1,0 +1,86 @@
+@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Nav
+@inject Fenio1.UI.Services.JwtAuthStateProvider AuthProvider
+
+<div class="fenio-layout">
+    <nav class="navbar navbar-expand-lg navbar-dark fenio-navbar">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <span class="text-danger">F</span>ENIO<span class="text-danger">1</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <AuthorizeView>
+                    <Authorized Context="authUser">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/races">🏁 Utrke</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/leaderboard">🏆 Leaderboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/my-predictions">📋 Moje prognoze</a>
+                            </li>
+                            <AuthorizeView Roles="Admin">
+                                <Authorized Context="adminCtx">
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                            ⚙️ Admin
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-dark">
+                                            <li><a class="dropdown-item" href="/admin/users">Korisnici</a></li>
+                                            <li><a class="dropdown-item" href="/admin/drivers">Vozači</a></li>
+                                            <li><a class="dropdown-item" href="/admin/teams">Timovi</a></li>
+                                            <li><a class="dropdown-item" href="/admin/circuits">Staze</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="/admin/races">Upravljanje utrkama</a></li>
+                                        </ul>
+                                    </li>
+                                </Authorized>
+                            </AuthorizeView>
+                        </ul>
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    👤 @authUser.User.Identity?.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                                    <li>
+                                        <button class="dropdown-item text-danger" @onclick="LogoutAsync">
+                                            🚪 Odjava
+                                        </button>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </div>
+    </nav>
+
+    <main class="fenio-main">
+        <div class="container py-4">
+            @Body
+        </div>
+    </main>
+
+    <footer class="fenio-footer">
+        <div class="container text-center">
+            <small class="text-muted">Fenio1 &copy; @DateTime.Now.Year · Formula 1 Prognoze</small>
+        </div>
+    </footer>
+</div>
+
+@code {
+    private async Task LogoutAsync()
+    {
+        await AuthProvider.LogoutAsync();
+        Nav.NavigateTo("/login", forceLoad: true);
+    }
+}

@@ -1,0 +1,103 @@
+@page "/my-predictions"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject Fenio1.UI.Services.ApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Moje prognoze – Fenio1</PageTitle>
+
+<h4 class="fw-bold mb-4">📋 Moje prognoze</h4>
+
+@if (_loading)
+{
+    <div class="text-center py-5"><div class="spinner-border text-danger"></div></div>
+}
+else if (_predictions.Count == 0)
+{
+    <div class="alert alert-secondary">
+        Nemaš unesenih prognoza. <a href="/races" class="alert-link">Idi na utrke →</a>
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var p in _predictions)
+        {
+            <div class="col-md-6">
+                <div class="card fenio-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold mb-0">@p.RaceName</h6>
+                            @if (p.TotalPointsForRace.HasValue)
+                            {
+                                <span class="badge bg-warning text-dark fs-6">@p.TotalPointsForRace boda</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Na čekanju</span>
+                            }
+                        </div>
+
+                        <small class="text-muted d-block mb-2">
+                            Uneseno: @p.SubmittedAt.ToString("dd.MM.yyyy HH:mm")
+                            @if (p.UpdatedAt.HasValue)
+                            {
+                                <span> · Ažurirano: @p.UpdatedAt.Value.ToString("dd.MM.yyyy HH:mm")</span>
+                            }
+                        </small>
+
+                        @if (p.IsLocked)
+                        {
+                            <span class="badge bg-danger mb-2">🔒 Zaključano</span>
+                        }
+
+                        <!-- Mini prikaz top 3 -->
+                        @if (p.RacePositions.Any())
+                        {
+                            <div class="d-flex gap-2 flex-wrap">
+                                @foreach (var pos in p.RacePositions.OrderBy(x => x.Position).Take(3))
+                                {
+                                    <span class="badge @(pos.IsCorrect ? "bg-success" : "bg-secondary")">
+                                        P@(pos.Position) @pos.DriverCode
+                                    </span>
+                                }
+                                <span class="text-muted">...</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer bg-transparent border-0">
+                        <div class="d-flex gap-2">
+                            @if (!p.IsLocked)
+                            {
+                                <a href="/races/@p.RaceId/predict" class="btn btn-outline-danger btn-sm">✏️ Uredi</a>
+                            }
+                            <a href="/races/@p.RaceId/results" class="btn btn-outline-secondary btn-sm">📊 Rezultati</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Ukupno bodova -->
+    <div class="card fenio-card mt-4 border-warning">
+        <div class="card-body text-center">
+            <h5 class="mb-0">
+                Ukupno bodova ove sezone:
+                <span class="text-warning fw-bold fs-4 ms-2">
+                    @_predictions.Where(p => p.TotalPointsForRace.HasValue).Sum(p => p.TotalPointsForRace)
+                </span>
+            </h5>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Models.PredictionDto> _predictions = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _predictions = await Api.GetMyPredictionsAsync();
+        _loading = false;
+    }
+}

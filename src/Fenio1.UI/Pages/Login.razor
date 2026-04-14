@@ -1,0 +1,87 @@
+@page "/login"
+@layout Fenio1.UI.Shared.MainLayout
+@inject Fenio1.UI.Services.ApiService Api
+@inject Fenio1.UI.Services.JwtAuthStateProvider AuthProvider
+@inject NavigationManager Nav
+
+<PageTitle>Prijava – Fenio1</PageTitle>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4 col-sm-8">
+        <div class="card fenio-card">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold">
+                        <span class="text-danger">F</span>ENIO<span class="text-danger">1</span>
+                    </h2>
+                    <p class="text-muted">Formula 1 Prognoze</p>
+                </div>
+
+                @if (!string.IsNullOrEmpty(_error))
+                {
+                    <div class="alert alert-danger py-2">@_error</div>
+                }
+
+                <div class="mb-3">
+                    <label class="form-label">Korisničko ime</label>
+                    <input type="text" class="form-control" @bind="_username" @onkeydown="OnKeyDown" placeholder="username" />
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Lozinka</label>
+                    <input type="password" class="form-control" @bind="_password" @onkeydown="OnKeyDown" placeholder="••••••••" />
+                </div>
+
+                <button class="btn btn-danger w-100 fw-bold" @onclick="LoginAsync" disabled="@_loading">
+                    @if (_loading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    Prijava
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _username = "";
+    private string _password = "";
+    private string? _error;
+    private bool _loading;
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private async Task LoginAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_username) || string.IsNullOrWhiteSpace(_password))
+        {
+            _error = "Unesite korisničko ime i lozinku.";
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+
+        var result = await Api.LoginAsync(new Models.LoginRequest
+        {
+            Username = _username,
+            Password = _password
+        });
+
+        if (result == null)
+        {
+            _error = "Neispravan username ili lozinka.";
+            _loading = false;
+            return;
+        }
+
+        await AuthProvider.LoginAsync(result.Token);
+        Nav.NavigateTo(ReturnUrl ?? "/races");
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await LoginAsync();
+    }
+}

@@ -1,0 +1,106 @@
+@* ======================== TEAMS ======================== *@
+@page "/admin/teams"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@inject Fenio1.UI.Services.ApiService Api
+
+<PageTitle>Timovi – Admin</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">🏁 Timovi</h4>
+    <button class="btn btn-danger btn-sm" @onclick="() => _showCreate = !_showCreate">+ Novi tim</button>
+</div>
+
+@if (_showCreate)
+{
+    <div class="card fenio-card mb-4">
+        <div class="card-header fw-bold">Novi tim</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Puni naziv</label>
+                    <input class="form-control fenio-input" @bind="_new.Name" placeholder="npr. Red Bull Racing" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Kratki naziv</label>
+                    <input class="form-control fenio-input" @bind="_new.ShortName" placeholder="npr. Red Bull" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Nacionalnost</label>
+                    <input class="form-control fenio-input" @bind="_new.Nationality" placeholder="npr. Austrian" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Boja (HEX)</label>
+                    <div class="input-group">
+                        <input type="color" class="form-control form-control-color fenio-input p-1"
+                               value="@(_new.PrimaryColor ?? "#FF0000")"
+                               @onchange="e => _new.PrimaryColor = e.Value?.ToString()" />
+                        <input class="form-control fenio-input" @bind="_new.PrimaryColor" placeholder="#FF0000" />
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-danger" @onclick="CreateAsync">Spremi</button>
+                <button class="btn btn-outline-secondary" @onclick="() => _showCreate = false">Odustani</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_loading)
+{
+    <div class="text-center py-4"><div class="spinner-border text-danger"></div></div>
+}
+else
+{
+    <div class="card fenio-card">
+        <div class="card-body p-0">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr><th>Naziv</th><th>Kratki</th><th>Nac.</th><th>Boja</th><th>Aktivan</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in _teams)
+                    {
+                        <tr>
+                            <td class="fw-bold">@t.Name</td>
+                            <td>@t.ShortName</td>
+                            <td>@t.Nationality</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(t.PrimaryColor))
+                                {
+                                    <span class="badge" style="background-color:@t.PrimaryColor">@t.PrimaryColor</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">–</span>
+                                }
+                            </td>
+                            <td>@(t.IsActive ? "✅" : "❌")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Models.TeamDto> _teams = new();
+    private Models.CreateTeamRequest _new = new();
+    private bool _loading = true, _showCreate;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _teams = await Api.GetTeamsAsync();
+        _loading = false;
+    }
+
+    private async Task CreateAsync()
+    {
+        var result = await Api.CreateTeamAsync(_new);
+        if (result != null) { _showCreate = false; _new = new(); await LoadAsync(); }
+    }
+}

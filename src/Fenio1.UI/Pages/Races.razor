@@ -1,0 +1,126 @@
+@page "/races"
+@page "/"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject Fenio1.UI.Services.ApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Utrke – Fenio1</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-0 fw-bold">🏁 Utrke</h3>
+        @if (_season != null)
+        {
+            <small class="text-muted">@_season.Name</small>
+        }
+    </div>
+    <div class="d-flex gap-2">
+        @if (_seasons.Count > 1)
+        {
+            <select class="form-select form-select-sm" style="width:auto" @onchange="OnSeasonChange">
+                @foreach (var s in _seasons)
+                {
+                    <option value="@s.Id" selected="@(s.Id == _selectedSeasonId)">@s.Year</option>
+                }
+            </select>
+        }
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border text-danger"></div>
+    </div>
+}
+else if (_races.Count == 0)
+{
+    <div class="alert alert-secondary">Nema utrka za ovu sezonu.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var race in _races)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card fenio-card h-100 @(race.Status == "Completed" ? "opacity-75" : "")">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-secondary">Runda @race.RoundNumber</span>
+                            <span class="badge @GetStatusBadge(race.Status)">@GetStatusLabel(race.Status)</span>
+                        </div>
+                        <h5 class="card-title fw-bold">@race.Name</h5>
+                        <p class="text-muted mb-1">
+                            <small>📍 @race.CircuitName · @race.CircuitCountry</small>
+                        </p>
+                        <p class="text-muted mb-2">
+                            <small>📅 @race.RaceDate.ToString("dd.MM.yyyy")</small>
+                            @if (race.HasSprint)
+                            {
+                                <span class="badge bg-warning text-dark ms-2" style="font-size:0.65rem">SPRINT</span>
+                            }
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pt-0">
+                        <div class="d-flex gap-2">
+                            @if (race.Status != "Completed")
+                            {
+                                <a href="/races/@race.Id/predict" class="btn btn-danger btn-sm flex-grow-1">
+                                    ✏️ Prognoza
+                                </a>
+                            }
+                            <a href="/races/@race.Id/results" class="btn btn-outline-secondary btn-sm flex-grow-1">
+                                📊 Rezultati
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Models.RaceSummaryDto> _races = new();
+    private List<Models.SeasonDto> _seasons = new();
+    private Models.SeasonDto? _season;
+    private int _selectedSeasonId;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _seasons = await Api.GetSeasonsAsync();
+        _season = await Api.GetActiveSeasonAsync();
+        _selectedSeasonId = _season?.Id ?? (_seasons.FirstOrDefault()?.Id ?? 0);
+        await LoadRacesAsync();
+    }
+
+    private async Task LoadRacesAsync()
+    {
+        _loading = true;
+        _races = await Api.GetRacesAsync(_selectedSeasonId > 0 ? _selectedSeasonId : null);
+        _loading = false;
+    }
+
+    private async Task OnSeasonChange(ChangeEventArgs e)
+    {
+        _selectedSeasonId = int.Parse(e.Value?.ToString() ?? "0");
+        _season = _seasons.FirstOrDefault(s => s.Id == _selectedSeasonId);
+        await LoadRacesAsync();
+    }
+
+    private static string GetStatusBadge(string status) => status switch
+    {
+        "Completed" => "bg-success",
+        "Upcoming" => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    private static string GetStatusLabel(string status) => status switch
+    {
+        "Completed" => "Završena",
+        "Upcoming" => "Predstojeća",
+        "Cancelled" => "Otkazana",
+        _ => status
+    };
+}

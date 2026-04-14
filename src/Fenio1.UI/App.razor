@@ -1,0 +1,34 @@
+@using Microsoft.AspNetCore.Components.Authorization
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    @if (!context.User.Identity?.IsAuthenticated ?? true)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <p class="alert alert-danger m-3">Nemate dozvolu za pristup ovoj stranici.</p>
+                    }
+                </NotAuthorized>
+                <Authorizing>
+                    <div class="d-flex justify-content-center mt-5">
+                        <div class="spinner-border text-danger" role="status"></div>
+                    </div>
+                </Authorizing>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <PageTitle>Stranica nije pronađena</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <div class="container mt-5 text-center">
+                    <h2>404 – Stranica nije pronađena</h2>
+                    <a href="/" class="btn btn-danger mt-3">Povratak na početnu</a>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

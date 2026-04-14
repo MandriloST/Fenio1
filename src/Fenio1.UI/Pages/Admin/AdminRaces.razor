@@ -1,0 +1,162 @@
+@page "/admin/races"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@inject Fenio1.UI.Services.ApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Upravljanje utrkama – Admin</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">⚙️ Utrke – Admin</h4>
+    <button class="btn btn-danger btn-sm" @onclick="() => _showCreate = true">+ Nova utrka</button>
+</div>
+
+@if (_showCreate)
+{
+    <div class="card fenio-card mb-4">
+        <div class="card-header fw-bold">Nova utrka</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Sezona</label>
+                    <select class="form-select fenio-select" @bind="_newRace.SeasonId">
+                        <option value="0">– Odaberi –</option>
+                        @foreach (var s in _seasons)
+                        {
+                            <option value="@s.Id">@s.Year – @s.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Staza</label>
+                    <select class="form-select fenio-select" @bind="_newRace.CircuitId">
+                        <option value="0">– Odaberi –</option>
+                        @foreach (var c in _circuits)
+                        {
+                            <option value="@c.Id">@c.Name (@c.Country)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Naziv</label>
+                    <input class="form-control fenio-input" @bind="_newRace.Name" placeholder="npr. Monaco Grand Prix" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Runda</label>
+                    <input type="number" class="form-control fenio-input" @bind="_newRace.RoundNumber" min="1" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Datum utrke</label>
+                    <input type="datetime-local" class="form-control fenio-input"
+                           value="@_newRace.RaceDate.ToString("yyyy-MM-ddTHH:mm")"
+                           @onchange="e => _newRace.RaceDate = DateTime.Parse(e.Value?.ToString() ?? DateTime.Today.ToString())" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Datum kvalifikacija</label>
+                    <input type="datetime-local" class="form-control fenio-input"
+                           @onchange="e => _newRace.QualifyingDate = string.IsNullOrEmpty(e.Value?.ToString()) ? null : DateTime.Parse(e.Value.ToString()!)" />
+                </div>
+                <div class="col-md-4 d-flex align-items-end gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" @bind="_newRace.HasSprint" id="hasSprint" />
+                        <label class="form-check-label" for="hasSprint">Sprint utrka</label>
+                    </div>
+                </div>
+                @if (_newRace.HasSprint)
+                {
+                    <div class="col-md-4">
+                        <label class="form-label">Datum sprinta</label>
+                        <input type="datetime-local" class="form-control fenio-input"
+                               @onchange="e => _newRace.SprintDate = string.IsNullOrEmpty(e.Value?.ToString()) ? null : DateTime.Parse(e.Value.ToString()!)" />
+                    </div>
+                }
+                <div class="col-md-4">
+                    <label class="form-label">External API ID (opcionalno)</label>
+                    <input class="form-control fenio-input" @bind="_newRace.ExternalApiId" placeholder="npr. openf1_session_key" />
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-danger" @onclick="CreateRaceAsync">Spremi</button>
+                <button class="btn btn-outline-secondary" @onclick="() => _showCreate = false">Odustani</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_loading)
+{
+    <div class="text-center py-4"><div class="spinner-border text-danger"></div></div>
+}
+else
+{
+    <div class="card fenio-card">
+        <div class="card-body p-0">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Rnd</th>
+                        <th>Naziv</th>
+                        <th>Datum</th>
+                        <th>Status</th>
+                        <th>Sprint</th>
+                        <th class="text-end">Akcije</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in _races)
+                    {
+                        <tr>
+                            <td>@r.RoundNumber</td>
+                            <td>@r.Name</td>
+                            <td>@r.RaceDate.ToString("dd.MM.yyyy")</td>
+                            <td><span class="badge @GetStatusBadge(r.Status)">@r.Status</span></td>
+                            <td>@(r.HasSprint ? "✅" : "–")</td>
+                            <td class="text-end">
+                                <a href="/admin/races/@r.Id/results" class="btn btn-danger btn-sm">Unesi rezultate</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Models.RaceSummaryDto> _races = new();
+    private List<Models.SeasonDto> _seasons = new();
+    private List<Models.CircuitDto> _circuits = new();
+    private Models.CreateRaceRequest _newRace = new();
+    private bool _loading = true, _showCreate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _seasons = await Api.GetSeasonsAsync();
+        _circuits = await Api.GetCircuitsAsync();
+        await LoadRacesAsync();
+    }
+
+    private async Task LoadRacesAsync()
+    {
+        _loading = true;
+        _races = await Api.GetRacesAsync();
+        _loading = false;
+    }
+
+    private async Task CreateRaceAsync()
+    {
+        var result = await Api.CreateRaceAsync(_newRace);
+        if (result != null)
+        {
+            _showCreate = false;
+            _newRace = new();
+            await LoadRacesAsync();
+        }
+    }
+
+    private static string GetStatusBadge(string status) => status switch
+    {
+        "Completed" => "bg-success",
+        "Upcoming" => "bg-danger",
+        _ => "bg-secondary"
+    };
+}

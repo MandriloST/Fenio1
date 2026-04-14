@@ -1,0 +1,124 @@
+@* ======================== DRIVERS ======================== *@
+@page "/admin/drivers"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@inject Fenio1.UI.Services.ApiService Api
+
+<PageTitle>Vozači – Admin</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">🏎️ Vozači</h4>
+    <button class="btn btn-danger btn-sm" @onclick="() => _showCreate = !_showCreate">+ Novi vozač</button>
+</div>
+
+@if (_showCreate)
+{
+    <div class="card fenio-card mb-4">
+        <div class="card-header fw-bold">Novi vozač</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Ime</label>
+                    <input class="form-control fenio-input" @bind="_new.FirstName" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Prezime</label>
+                    <input class="form-control fenio-input" @bind="_new.LastName" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Kod (3 slova)</label>
+                    <input class="form-control fenio-input" @bind="_new.Code" maxlength="3" placeholder="VER" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Broj</label>
+                    <input type="number" class="form-control fenio-input" @bind="_new.DriverNumber" min="1" max="99" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Nacionalnost</label>
+                    <input class="form-control fenio-input" @bind="_new.Nationality" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Tim</label>
+                    <select class="form-select fenio-select" @bind="_new.TeamId">
+                        <option value="">– Bez tima –</option>
+                        @foreach (var t in _teams)
+                        {
+                            <option value="@t.Id">@t.ShortName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Datum rođenja</label>
+                    <input type="date" class="form-control fenio-input"
+                           value="@_new.DateOfBirth.ToString("yyyy-MM-dd")"
+                           @onchange="@(e => _new.DateOfBirth = DateTime.Parse(e.Value?.ToString() ?? "1995-01-01"))" />
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-danger" @onclick="CreateAsync">Spremi</button>
+                <button class="btn btn-outline-secondary" @onclick="() => _showCreate = false">Odustani</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_loading)
+{
+    <div class="text-center py-4"><div class="spinner-border text-danger"></div></div>
+}
+else
+{
+    <div class="card fenio-card">
+        <div class="card-body p-0">
+            <table class="table table-dark table-hover mb-0 table-sm">
+                <thead>
+                    <tr><th>#</th><th>Kod</th><th>Ime</th><th>Tim</th><th>Nac.</th><th>Aktivan</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in _drivers)
+                    {
+                        <tr>
+                            <td>@d.DriverNumber</td>
+                            <td><span class="badge bg-danger">@d.Code</span></td>
+                            <td>@d.FullName</td>
+                            <td>@(d.TeamName ?? "–")</td>
+                            <td>@d.Nationality</td>
+                            <td>@(d.IsActive ? "✅" : "❌")</td>
+                            <td><button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteAsync(d.Id)">🗑</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Models.DriverDto> _drivers = new();
+    private List<Models.TeamDto> _teams = new();
+    private Models.CreateDriverRequest _new = new();
+    private bool _loading = true, _showCreate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _teams = await Api.GetTeamsAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _drivers = await Api.GetDriversAsync();
+        _loading = false;
+    }
+
+    private async Task CreateAsync()
+    {
+        var result = await Api.CreateDriverAsync(_new);
+        if (result != null) { _showCreate = false; _new = new(); await LoadAsync(); }
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        if (await Api.DeleteDriverAsync(id)) await LoadAsync();
+    }
+}

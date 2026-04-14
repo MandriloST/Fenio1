@@ -1,0 +1,255 @@
+@page "/races/{RaceId:int}/results"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject Fenio1.UI.Services.ApiService Api
+
+<PageTitle>Rezultati – Fenio1</PageTitle>
+
+@if (_loading)
+{
+    <div class="text-center py-5"><div class="spinner-border text-danger"></div></div>
+}
+else if (_race == null)
+{
+    <div class="alert alert-danger">Utrka nije pronađena.</div>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">📊 Rezultati</h4>
+            <small class="text-muted">@_race.Name · Runda @_race.RoundNumber · @_race.RaceDate.ToString("dd.MM.yyyy")</small>
+        </div>
+        <a href="/races" class="btn btn-outline-secondary btn-sm">← Natrag</a>
+    </div>
+
+    @if (_results == null)
+    {
+        <div class="alert alert-info">Rezultati još nisu uneseni za ovu utrku.</div>
+
+        @if (_myPrediction != null)
+        {
+            <div class="alert alert-secondary">
+                ✅ Tvoja prognoza je unesena. Bodovi će biti izračunati nakon unosa rezultata.
+            </div>
+        }
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- UTRKA - rezultati i prognoza usporedno -->
+            <div class="col-lg-6">
+                <div class="card fenio-card">
+                    <div class="card-header fw-bold">🏎️ Utrka – Rezultati</div>
+                    <div class="card-body p-0">
+                        <table class="table table-dark table-hover mb-0 table-sm">
+                            <thead><tr><th>Poz</th><th>Vozač</th><th>Prognoza</th></tr></thead>
+                            <tbody>
+                                @foreach (var r in _results.RacePositions.OrderBy(x => x.Position))
+                                {
+                                    var predicted = _myPrediction?.RacePositions.FirstOrDefault(p => p.Position == r.Position);
+                                    <tr>
+                                        <td class="fw-bold text-danger">@r.Position.</td>
+                                        <td>@r.DriverCode</td>
+                                        <td>
+                                            @if (predicted != null)
+                                            {
+                                                <span class="@(predicted.IsCorrect ? "text-success" : "text-danger")">
+                                                    @(predicted.IsCorrect ? "✅" : "❌") @predicted.DriverCode
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KVALIFIKACIJE -->
+            <div class="col-lg-6">
+                <div class="card fenio-card">
+                    <div class="card-header fw-bold">⏱️ Kvalifikacije – Rezultati</div>
+                    <div class="card-body p-0">
+                        <table class="table table-dark table-hover mb-0 table-sm">
+                            <thead><tr><th>Poz</th><th>Vozač</th><th>Prognoza</th></tr></thead>
+                            <tbody>
+                                @foreach (var r in _results.QualifyingPositions.OrderBy(x => x.Position))
+                                {
+                                    var predicted = _myPrediction?.QualifyingPositions.FirstOrDefault(p => p.Position == r.Position);
+                                    <tr>
+                                        <td class="fw-bold text-warning">@r.Position.</td>
+                                        <td>@r.DriverCode</td>
+                                        <td>
+                                            @if (predicted != null)
+                                            {
+                                                <span class="@(predicted.IsCorrect ? "text-success" : "text-danger")">
+                                                    @(predicted.IsCorrect ? "✅" : "❌") @predicted.DriverCode
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SPRINT -->
+            @if (_race.HasSprint && _results.SprintPositions != null)
+            {
+                <div class="col-lg-6">
+                    <div class="card fenio-card">
+                        <div class="card-header fw-bold">⚡ Sprint – Rezultati</div>
+                        <div class="card-body p-0">
+                            <table class="table table-dark table-hover mb-0 table-sm">
+                                <thead><tr><th>Poz</th><th>Vozač</th><th>Prognoza</th></tr></thead>
+                                <tbody>
+                                    @foreach (var r in _results.SprintPositions.OrderBy(x => x.Position))
+                                    {
+                                        var predicted = _myPrediction?.SprintPositions?.FirstOrDefault(p => p.Position == r.Position);
+                                        <tr>
+                                            <td class="fw-bold text-info">@r.Position.</td>
+                                            <td>@r.DriverCode</td>
+                                            <td>
+                                                @if (predicted != null)
+                                                {
+                                                    <span class="@(predicted.IsCorrect ? "text-success" : "text-danger")">
+                                                        @(predicted.IsCorrect ? "✅" : "❌") @predicted.DriverCode
+                                                    </span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- POSEBNE KATEGORIJE -->
+            @if (_results.Extras != null)
+            {
+                <div class="col-lg-6">
+                    <div class="card fenio-card">
+                        <div class="card-header fw-bold">🎯 Posebne kategorije</div>
+                        <div class="card-body">
+                            @RenderExtra("🚫 DNF", _results.Extras.DnfDriver, _myPrediction?.Extras.PredictedDnfDriver)
+                            @RenderExtra("⚡ Fastest Lap", _results.Extras.FastestLapDriver, _myPrediction?.Extras.PredictedFastestLapDriver)
+                            @RenderExtra("🏅 Scored Points", _results.Extras.ScoredPointsDriver, _myPrediction?.Extras.PredictedScoredPointsDriver)
+                            @RenderExtra("🔧 Fastest Pit Stop", _results.Extras.FastestPitStopDriver, _myPrediction?.Extras.PredictedFastestPitStopDriver)
+                            @RenderExtra("⭐ Driver of the Day", _results.Extras.DriverOfTheDay, _myPrediction?.Extras.PredictedDriverOfTheDay)
+                            <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
+                                <span>🚗 Safety Car</span>
+                                <span>
+                                    <strong>@_results.Extras.SafetyCarCount</strong>
+                                    @if (_myPrediction?.Extras.PredictedSafetyCarCount != null)
+                                    {
+                                        var correct = _myPrediction.Extras.PredictedSafetyCarCount == _results.Extras.SafetyCarCount;
+                                        <span class="ms-2 @(correct ? "text-success" : "text-danger")">
+                                            @(correct ? "✅" : "❌") @_myPrediction.Extras.PredictedSafetyCarCount
+                                        </span>
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- BODOVI -->
+        @if (_myPrediction?.TotalPointsForRace != null)
+        {
+            <div class="card fenio-card mt-4 border-warning">
+                <div class="card-body text-center py-3">
+                    <h4 class="mb-0">
+                        🏆 Tvoji bodovi za ovu utrku:
+                        <span class="text-warning fw-bold fs-3">@_myPrediction.TotalPointsForRace</span>
+                    </h4>
+                </div>
+            </div>
+        }
+
+        <!-- LEADERBOARD ZA UTRKU -->
+        @if (_raceLeaderboard != null && _raceLeaderboard.Scores.Any())
+        {
+            <div class="card fenio-card mt-4">
+                <div class="card-header fw-bold">📋 Rezultati prognoza – @_race.Name</div>
+                <div class="card-body p-0">
+                    <table class="table table-dark table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Poz</th>
+                                <th>Korisnik</th>
+                                <th class="text-end">Bodovi (utrka)</th>
+                                <th class="text-end">Bodovi (ukupno)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var entry in _raceLeaderboard.Scores)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@entry.Position.</td>
+                                    <td>@entry.Username</td>
+                                    <td class="text-end text-warning fw-bold">@entry.PointsForRace</td>
+                                    <td class="text-end text-info">@entry.CumulativePoints</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+}
+
+@code {
+    [Parameter] public int RaceId { get; set; }
+
+    private Models.RaceDto? _race;
+    private Models.RaceResultsDto? _results;
+    private Models.PredictionDto? _myPrediction;
+    private Models.RaceLeaderboardDto? _raceLeaderboard;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _race = await Api.GetRaceAsync(RaceId);
+        _results = await Api.GetRaceResultsAsync(RaceId);
+        _myPrediction = await Api.GetMyPredictionForRaceAsync(RaceId);
+
+        if (_results != null)
+            _raceLeaderboard = await Api.GetRaceLeaderboardAsync(RaceId);
+
+        _loading = false;
+    }
+
+    private RenderFragment RenderExtra(string label, Models.DriverSummaryDto? actual, Models.DriverSummaryDto? predicted)
+        => builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "d-flex justify-content-between py-2 border-bottom border-secondary");
+
+            builder.OpenElement(2, "span");
+            builder.AddContent(3, label);
+            builder.CloseElement();
+
+            builder.OpenElement(4, "span");
+            builder.AddContent(5, actual?.Code ?? "–");
+
+            if (predicted != null)
+            {
+                var correct = predicted.Id == actual?.Id;
+                builder.OpenElement(6, "span");
+                builder.AddAttribute(7, "class", $"ms-2 {(correct ? "text-success" : "text-danger")}");
+                builder.AddContent(8, $"{(correct ? "✅" : "❌")} {predicted.Code}");
+                builder.CloseElement();
+            }
+
+            builder.CloseElement();
+            builder.CloseElement();
+        };
+}

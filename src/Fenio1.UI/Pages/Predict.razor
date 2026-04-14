@@ -1,0 +1,342 @@
+@page "/races/{RaceId:int}/predict"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject Fenio1.UI.Services.ApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Prognoza – Fenio1</PageTitle>
+
+@if (_loading)
+{
+    <div class="text-center py-5"><div class="spinner-border text-danger"></div></div>
+}
+else if (_race == null)
+{
+    <div class="alert alert-danger">Utrka nije pronađena.</div>
+}
+else if (_race.Status == "Completed" && _existing?.IsLocked == true)
+{
+    <div class="alert alert-warning">
+        Utrka je završena i prognoza je zaključana. <a href="/races/@RaceId/results">Pogledaj rezultate →</a>
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold mb-0">✏️ Prognoza</h4>
+            <small class="text-muted">@_race.Name · Runda @_race.RoundNumber · @_race.RaceDate.ToString("dd.MM.yyyy")</small>
+        </div>
+        <a href="/races" class="btn btn-outline-secondary btn-sm">← Natrag</a>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+    @if (_saved)
+    {
+        <div class="alert alert-success">✅ Prognoza uspješno spremljena!</div>
+    }
+
+    <!-- UTRKA - Top 10 -->
+    <div class="card fenio-card mb-3">
+        <div class="card-header fw-bold">🏎️ Poredak u utrci (Top 10)</div>
+        <div class="card-body p-0">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:80px">Pozicija</th>
+                        <th>Vozač</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < 10; i++)
+                    {
+                        var pos = i + 1;
+                        var idx = i;
+                        <tr>
+                            <td class="fw-bold text-danger align-middle">P@(pos)</td>
+                            <td>
+                                <select class="form-select form-select-sm fenio-select"
+                                        value="@_racePositions[idx]"
+                                        @onchange="@(e => _racePositions[idx] = int.Parse(e.Value?.ToString() ?? "0"))">
+                                    <option value="0">– Odaberi vozača –</option>
+                                    @foreach (var d in _drivers)
+                                    {
+                                        <option value="@d.Id">@d.DriverNumber · @d.FullName (@d.Code)</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- KVALIFIKACIJE - Top 3 -->
+    <div class="card fenio-card mb-3">
+        <div class="card-header fw-bold">⏱️ Poredak u kvalifikacijama (Top 3)</div>
+        <div class="card-body p-0">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr><th style="width:80px">Pozicija</th><th>Vozač</th></tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        var pos = i + 1;
+                        var idx = i;
+                        <tr>
+                            <td class="fw-bold text-warning align-middle">
+                                @(pos == 1 ? "🥇" : pos == 2 ? "🥈" : "🥉") P@(pos)
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm fenio-select"
+                                        value="@_qualPositions[idx]"
+                                        @onchange="@(e => _qualPositions[idx] = int.Parse(e.Value?.ToString() ?? "0"))">
+                                    <option value="0">– Odaberi vozača –</option>
+                                    @foreach (var d in _drivers)
+                                    {
+                                        <option value="@d.Id">@d.DriverNumber · @d.FullName (@d.Code)</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SPRINT - Top 3 (ako postoji) -->
+    @if (_race.HasSprint)
+    {
+        <div class="card fenio-card mb-3">
+            <div class="card-header fw-bold">⚡ Poredak u sprint utrci (Top 3)</div>
+            <div class="card-body p-0">
+                <table class="table table-dark table-hover mb-0">
+                    <thead>
+                        <tr><th style="width:80px">Pozicija</th><th>Vozač</th></tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < 3; i++)
+                        {
+                            var pos = i + 1;
+                            var idx = i;
+                            <tr>
+                                <td class="fw-bold text-info align-middle">P@(pos)</td>
+                                <td>
+                                    <select class="form-select form-select-sm fenio-select"
+                                            value="@_sprintPositions[idx]"
+                                            @onchange="@(e => _sprintPositions[idx] = int.Parse(e.Value?.ToString() ?? "0"))">
+                                        <option value="0">– Odaberi vozača –</option>
+                                        @foreach (var d in _drivers)
+                                        {
+                                            <option value="@d.Id">@d.DriverNumber · @d.FullName (@d.Code)</option>
+                                        }
+                                    </select>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- POSEBNE KATEGORIJE -->
+    <div class="card fenio-card mb-4">
+        <div class="card-header fw-bold">🎯 Posebne kategorije</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">🚫 Did Not Finish (DNF)</label>
+                    <select class="form-select fenio-select" @bind="_extras.PredictedDnfDriverId">
+                        <option value="">– Nitko / Ne znam –</option>
+                        @foreach (var d in _drivers)
+                        {
+                            <option value="@d.Id">@d.FullName (@d.Code)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">⚡ Fastest Lap</label>
+                    <select class="form-select fenio-select" @bind="_extras.PredictedFastestLapDriverId">
+                        <option value="">– Odaberi vozača –</option>
+                        @foreach (var d in _drivers)
+                        {
+                            <option value="@d.Id">@d.FullName (@d.Code)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">🏅 Scored Points</label>
+                    <select class="form-select fenio-select" @bind="_extras.PredictedScoredPointsDriverId">
+                        <option value="">– Odaberi vozača –</option>
+                        @foreach (var d in _drivers)
+                        {
+                            <option value="@d.Id">@d.FullName (@d.Code)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">🔧 Fastest Pit Stop</label>
+                    <select class="form-select fenio-select" @bind="_extras.PredictedFastestPitStopDriverId">
+                        <option value="">– Odaberi vozača –</option>
+                        @foreach (var d in _drivers)
+                        {
+                            <option value="@d.Id">@d.FullName (@d.Code)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">⭐ Driver of the Day</label>
+                    <select class="form-select fenio-select" @bind="_extras.PredictedDriverOfTheDayId">
+                        <option value="">– Odaberi vozača –</option>
+                        @foreach (var d in _drivers)
+                        {
+                            <option value="@d.Id">@d.FullName (@d.Code)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">🚗 Broj Safety Car izlazaka</label>
+                    <input type="number" class="form-control fenio-input" min="0" max="10"
+                           @bind="_extras.PredictedSafetyCarCount" placeholder="0" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 justify-content-end">
+        <a href="/races" class="btn btn-outline-secondary">Odustani</a>
+        <button class="btn btn-danger fw-bold px-4" @onclick="SubmitAsync" disabled="@_saving">
+            @if (_saving)
+            {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            💾 Spremi prognozu
+        </button>
+    </div>
+}
+
+@code {
+    [Parameter] public int RaceId { get; set; }
+
+    private Models.RaceDto? _race;
+    private List<Models.DriverSummaryDto> _drivers = new();
+    private Models.PredictionDto? _existing;
+
+    private int[] _racePositions = new int[10];
+    private int[] _qualPositions = new int[3];
+    private int[] _sprintPositions = new int[3];
+
+    private ExtrasForm _extras = new();
+    private bool _loading = true;
+    private bool _saving;
+    private bool _saved;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _race = await Api.GetRaceAsync(RaceId);
+        _drivers = await Api.GetDriversSummaryAsync();
+        _existing = await Api.GetMyPredictionForRaceAsync(RaceId);
+
+        if (_existing != null)
+        {
+            // Popuni forme s postojećom prognozom
+            foreach (var p in _existing.RacePositions)
+                if (p.Position >= 1 && p.Position <= 10)
+                    _racePositions[p.Position - 1] = p.DriverId;
+
+            foreach (var p in _existing.QualifyingPositions)
+                if (p.Position >= 1 && p.Position <= 3)
+                    _qualPositions[p.Position - 1] = p.DriverId;
+
+            if (_existing.SprintPositions != null)
+                foreach (var p in _existing.SprintPositions)
+                    if (p.Position >= 1 && p.Position <= 3)
+                        _sprintPositions[p.Position - 1] = p.DriverId;
+
+            _extras.PredictedDnfDriverId = _existing.Extras.PredictedDnfDriver?.Id;
+            _extras.PredictedFastestLapDriverId = _existing.Extras.PredictedFastestLapDriver?.Id;
+            _extras.PredictedScoredPointsDriverId = _existing.Extras.PredictedScoredPointsDriver?.Id;
+            _extras.PredictedFastestPitStopDriverId = _existing.Extras.PredictedFastestPitStopDriver?.Id;
+            _extras.PredictedDriverOfTheDayId = _existing.Extras.PredictedDriverOfTheDay?.Id;
+            _extras.PredictedSafetyCarCount = _existing.Extras.PredictedSafetyCarCount;
+        }
+
+        _loading = false;
+    }
+
+    private async Task SubmitAsync()
+    {
+        _error = null;
+        _saved = false;
+
+        // Validacija
+        if (_racePositions.Any(p => p == 0))
+        {
+            _error = "Odaberite vozača za svih 10 pozicija u utrci.";
+            return;
+        }
+        if (_qualPositions.Any(p => p == 0))
+        {
+            _error = "Odaberite vozača za sve 3 pozicije u kvalifikacijama.";
+            return;
+        }
+        if (_race?.HasSprint == true && _sprintPositions.Any(p => p == 0))
+        {
+            _error = "Odaberite vozača za sve 3 sprint pozicije.";
+            return;
+        }
+        if (_racePositions.Distinct().Count() != 10)
+        {
+            _error = "Isti vozač ne može biti na više pozicija u utrci.";
+            return;
+        }
+
+        _saving = true;
+
+        var request = new Models.SubmitPredictionRequest
+        {
+            RacePositions = _racePositions.Select((d, i) => new Models.PredictionPositionDto { Position = i + 1, DriverId = d }).ToList(),
+            QualifyingPositions = _qualPositions.Select((d, i) => new Models.PredictionPositionDto { Position = i + 1, DriverId = d }).ToList(),
+            SprintPositions = _race?.HasSprint == true
+                ? _sprintPositions.Select((d, i) => new Models.PredictionPositionDto { Position = i + 1, DriverId = d }).ToList()
+                : null,
+            PredictedDnfDriverId = _extras.PredictedDnfDriverId,
+            PredictedFastestLapDriverId = _extras.PredictedFastestLapDriverId,
+            PredictedScoredPointsDriverId = _extras.PredictedScoredPointsDriverId,
+            PredictedFastestPitStopDriverId = _extras.PredictedFastestPitStopDriverId,
+            PredictedDriverOfTheDayId = _extras.PredictedDriverOfTheDayId,
+            PredictedSafetyCarCount = _extras.PredictedSafetyCarCount
+        };
+
+        var (success, error) = await Api.SubmitPredictionAsync(RaceId, request);
+
+        if (success)
+        {
+            _saved = true;
+            _existing = await Api.GetMyPredictionForRaceAsync(RaceId);
+        }
+        else
+        {
+            _error = $"Greška: {error}";
+        }
+
+        _saving = false;
+    }
+
+    private class ExtrasForm
+    {
+        public int? PredictedDnfDriverId { get; set; }
+        public int? PredictedFastestLapDriverId { get; set; }
+        public int? PredictedScoredPointsDriverId { get; set; }
+        public int? PredictedFastestPitStopDriverId { get; set; }
+        public int? PredictedDriverOfTheDayId { get; set; }
+        public int? PredictedSafetyCarCount { get; set; }
+    }
+}
