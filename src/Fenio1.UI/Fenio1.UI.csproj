@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Fenio1.UI</RootNamespace>
+	
+	<!-- Debugger podrška za Blazor WASM u VS 2022 -->
+    <WasmDebugLevel>1</WasmDebugLevel>
+    <DebugType>portable</DebugType>
+    <Optimize>false</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

@@ -64,10 +64,10 @@
         _error = null;
 
         var result = await Api.LoginAsync(new Models.LoginRequest
-        {
-            Username = _username,
-            Password = _password
-        });
+            {
+                Username = _username,
+                Password = _password
+            });
 
         if (result == null)
         {
@@ -76,12 +76,27 @@
             return;
         }
 
-        await AuthProvider.LoginAsync(result.Token);
-        Nav.NavigateTo(ReturnUrl ?? "/races");
+        await AuthProvider.LoginAsync(result.Token);        
+        Nav.NavigateTo(GetSafeReturnUrl(), forceLoad: true);
     }
 
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await LoginAsync();
+    }
+
+    private string GetSafeReturnUrl()
+    {
+        if (string.IsNullOrEmpty(ReturnUrl)) return "/races";
+    
+        // Ako je apsolutni URL, izvuci samo path
+        if (Uri.TryCreate(ReturnUrl, UriKind.Absolute, out var uri))
+            return uri.PathAndQuery;
+    
+        // Ako već počinje s /, koristi direktno
+        if (ReturnUrl.StartsWith("/"))
+            return ReturnUrl;
+        
+        return "/races";
     }
 }

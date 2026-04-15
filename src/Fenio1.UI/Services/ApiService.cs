@@ -2,12 +2,18 @@ namespace Fenio1.UI.Services;
 
 using System.Net.Http.Json;
 using Fenio1.UI.Models;
+using Microsoft.Extensions.Logging;
 
 public class ApiService
 {
     private readonly HttpClient _http;
+    private readonly ILogger<ApiService> _logger;
 
-    public ApiService(HttpClient http) => _http = http;
+    public ApiService(HttpClient http, ILogger<ApiService> logger)
+    {
+        _http = http;
+        _logger = logger;
+    }
 
     // ========================
     //  AUTH
@@ -15,9 +21,26 @@ public class ApiService
 
     public async Task<LoginResponse?> LoginAsync(LoginRequest request)
     {
-        var response = await _http.PostAsJsonAsync("api/auth/login", request);
-        if (!response.IsSuccessStatusCode) return null;
-        return await response.Content.ReadFromJsonAsync<LoginResponse>();
+        _logger.LogInformation("LOGIN → username: {Username}", request.Username);
+        try
+        {
+            var response = await _http.PostAsJsonAsync("api/auth/login", request);
+            _logger.LogInformation("LOGIN ← status: {Status}", response.StatusCode);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("LOGIN FAILED: {Body}", body);
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<LoginResponse>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "LOGIN EXCEPTION");
+            return null;
+        }
     }
 
     // ========================
@@ -25,7 +48,7 @@ public class ApiService
     // ========================
 
     public async Task<List<SeasonDto>> GetSeasonsAsync()
-        => await _http.GetFromJsonAsync<List<SeasonDto>>("api/seasons") ?? new();
+       => await _http.GetFromJsonAsync<List<SeasonDto>>("api/seasons") ?? new();
 
     public async Task<SeasonDto?> GetActiveSeasonAsync()
     {
