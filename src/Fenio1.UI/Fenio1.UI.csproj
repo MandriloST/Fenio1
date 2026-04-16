@@ -21,4 +21,15 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0" />
   </ItemGroup>
 
+	<ItemGroup>
+		<!-- Osiguraj da se appsettings.Production.json kopira u publish output -->
+		<None Update="wwwroot\appsettings.Production.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="wwwroot\404.html">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+
 </Project>
