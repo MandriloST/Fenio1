@@ -136,9 +136,53 @@ else
                     <div class="card fenio-card">
                         <div class="card-header fw-bold">🎯 Posebne kategorije</div>
                         <div class="card-body">
-                            @RenderExtra("🚫 DNF", _results.Extras.DnfDriver, _myPrediction?.Extras.PredictedDnfDriver)
+
+                            <!-- DNF - lista vozača -->
+                            <div class="py-2 border-bottom border-secondary">
+                                <div class="d-flex justify-content-between">
+                                    <span>🚫 DNF vozači</span>
+                                    @if (_myPrediction?.Extras.PredictedDnfDriver != null)
+                                    {
+                                        var dnfIds = _results.Extras.DnfDrivers.Select(d => d.Id).ToList();
+                                        var correct = dnfIds.Contains(_myPrediction.Extras.PredictedDnfDriver.Id);
+                                        <span class="@(correct ? "text-success" : "text-danger")">
+                                            @(correct ? "✅" : "❌") Prognoza: @_myPrediction.Extras.PredictedDnfDriver.Code
+                                        </span>
+                                    }
+                                </div>
+                                @if (_results.Extras.DnfDrivers.Any())
+                                {
+                                    <div class="mt-1 d-flex flex-wrap gap-1">
+                                        @foreach (var d in _results.Extras.DnfDrivers)
+                                        {
+                                            <span class="badge bg-danger">@d.Code</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <small class="text-muted">Nema DNF vozača</small>
+                                }
+                            </div>
+
+                            <!-- Scored Points - automatski iz top 10 -->
+                            @if (_myPrediction?.Extras.PredictedScoredPointsDriver != null)
+                            {
+                                var top10Ids = _results.RacePositions
+                                    .Where(r => r.Position <= 10 && !r.DidNotFinish)
+                                    .Select(r => r.DriverId).ToList();
+                                var scoredCorrect = top10Ids.Contains(_myPrediction.Extras.PredictedScoredPointsDriver.Id);
+                                <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
+                                    <span>🏅 Scored Points</span>
+                                    <span class="@(scoredCorrect ? "text-success" : "text-danger")">
+                                        @(scoredCorrect ? "✅" : "❌") @_myPrediction.Extras.PredictedScoredPointsDriver.Code
+                                        <small class="text-muted ms-1">(gleda se top 10)</small>
+                                    </span>
+                                </div>
+                            }
+
                             @RenderExtra("⚡ Fastest Lap", _results.Extras.FastestLapDriver, _myPrediction?.Extras.PredictedFastestLapDriver)
-                            @RenderExtra("🏅 Scored Points", _results.Extras.ScoredPointsDriver, _myPrediction?.Extras.PredictedScoredPointsDriver)
+                            @* @RenderExtra("🏅 Scored Points", _results.Extras.ScoredPointsDriver, _myPrediction?.Extras.PredictedScoredPointsDriver) *@
                             @RenderExtra("🔧 Fastest Pit Stop", _results.Extras.FastestPitStopDriver, _myPrediction?.Extras.PredictedFastestPitStopDriver)
                             @RenderExtra("⭐ Driver of the Day", _results.Extras.DriverOfTheDay, _myPrediction?.Extras.PredictedDriverOfTheDay)
                             <div class="d-flex justify-content-between py-2 border-bottom border-secondary">

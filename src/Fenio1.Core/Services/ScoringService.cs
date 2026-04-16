@@ -14,6 +14,7 @@ public interface IAppDbContext
     DbSet<QualifyingResult> QualifyingResults { get; }
     DbSet<SprintResult> SprintResults { get; }
     DbSet<RaceExtra> RaceExtras { get; }
+    DbSet<RaceDnfEntry> RaceDnfEntries { get; }
     DbSet<PredictionLeaderboard> PredictionLeaderboards { get; }
     DbSet<Race> Races { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
@@ -89,19 +90,36 @@ public class ScoringService : IScoringService
         }
 
         // --- Provjera posebnih prognoza ---
+        // DNF: korisnikov vozač mora biti NA DNF LISTI (admin može unijeti više DNF vozača)
+        if (prediction.PredictedDnfDriverId.HasValue)
+        {
+            var dnfDriverIds = await _db.RaceDnfEntries
+                .Where(d => d.RaceId == prediction.RaceId)
+                .Select(d => d.DriverId)
+                .ToListAsync();
+
+            if (dnfDriverIds.Contains(prediction.PredictedDnfDriverId.Value))
+                points += PointsPerCorrectPrediction;
+        }
+
         if (raceExtra != null)
         {
-            if (prediction.PredictedDnfDriverId.HasValue &&
-                prediction.PredictedDnfDriverId == raceExtra.DnfDriverId)
-                points += PointsPerCorrectPrediction;
-
             if (prediction.PredictedFastestLapDriverId.HasValue &&
                 prediction.PredictedFastestLapDriverId == raceExtra.FastestLapDriverId)
                 points += PointsPerCorrectPrediction;
 
-            if (prediction.PredictedScoredPointsDriverId.HasValue &&
-                prediction.PredictedScoredPointsDriverId == raceExtra.ScoredPointsDriverId)
-                points += PointsPerCorrectPrediction;
+            // Scored Points: je li korisnikov vozač završio u top 10?
+            // Admin ne unosi ovo polje - automatski se gleda iz RaceResults
+            if (prediction.PredictedScoredPointsDriverId.HasValue)
+            {
+                var inTop10 = raceResults.Any(r =>
+                    r.DriverId == prediction.PredictedScoredPointsDriverId.Value &&
+                    r.Position <= 10 &&
+                    !r.DidNotFinish);
+
+                if (inTop10)
+                    points += PointsPerCorrectPrediction;
+            }
 
             if (prediction.PredictedFastestPitStopDriverId.HasValue &&
                 prediction.PredictedFastestPitStopDriverId == raceExtra.FastestPitStopDriverId)

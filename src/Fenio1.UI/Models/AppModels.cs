@@ -161,9 +161,9 @@ public class SprintPositionDetailDto
 
 public class RaceExtraDetailDto
 {
-    public DriverSummaryDto? DnfDriver { get; set; }
+    public List<DriverSummaryDto> DnfDrivers { get; set; } = new(); // lista
     public DriverSummaryDto? FastestLapDriver { get; set; }
-    public DriverSummaryDto? ScoredPointsDriver { get; set; }
+    //public DriverSummaryDto? ScoredPointsDriver { get; set; }
     public DriverSummaryDto? FastestPitStopDriver { get; set; }
     public DriverSummaryDto? DriverOfTheDay { get; set; }
     public int SafetyCarCount { get; set; }
@@ -238,11 +238,12 @@ public class RaceResultEntryDto
     public int DriverId { get; set; }
 }
 
-public class RaceExtrasDto
+// NOVO - zasebni modeli za admin i prediction
+public class AdminRaceExtrasDto  // za admin unos rezultata
 {
-    public int? DnfDriverId { get; set; }
+    public List<int> DnfDriverIds { get; set; } = new();
     public int? FastestLapDriverId { get; set; }
-    public int? ScoredPointsDriverId { get; set; }
+    // ScoredPoints nema
     public int? FastestPitStopDriverId { get; set; }
     public int? DriverOfTheDayId { get; set; }
     public int SafetyCarCount { get; set; }
@@ -253,7 +254,7 @@ public class SubmitRaceResultsRequest
     public List<RaceResultEntryDto> RacePositions { get; set; } = new();
     public List<RaceResultEntryDto> QualifyingPositions { get; set; } = new();
     public List<RaceResultEntryDto>? SprintPositions { get; set; }
-    public RaceExtrasDto Extras { get; set; } = new();
+    public AdminRaceExtrasDto Extras { get; set; } = new(); // promijenjeni tip
 }
 
 // ========================

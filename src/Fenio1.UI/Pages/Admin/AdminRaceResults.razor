@@ -133,15 +133,38 @@ else
         <div class="card-header fw-bold">🎯 Posebne kategorije</div>
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">🚫 Did Not Finish (DNF)</label>
-                    <select class="form-select fenio-select" @bind="_extras.DnfDriverId">
-                        <option value="">– Nitko –</option>
-                        @foreach (var d in _drivers)
-                        {
-                            <option value="@d.Id">@d.FullName (@d.Code)</option>
-                        }
-                    </select>
+                <!-- DNF - dinamična lista, admin može dodati više vozača -->
+                <div class="col-12">
+                    <label class="form-label">🚫 Did Not Finish (DNF) – možete dodati više vozača</label>
+                    @for (int i = 0; i < _dnfDriverIds.Count; i++)
+                    {
+                        var idx = i;
+                        <div class="d-flex gap-2 mb-2">
+                            <select class="form-select fenio-select"
+                                    value="@_dnfDriverIds[idx]"
+                                    @onchange="@(e => _dnfDriverIds[idx] = int.Parse(e.Value?.ToString() ??" 0"))">
+                                <option value="0">– Odaberi vozača –</option>
+                                @foreach (var d in _drivers)
+                                {
+                                    <option value="@d.Id">@d.DriverNumber · @d.FullName (@d.Code)</option>
+                                }
+                            </select>
+                            @if (_dnfDriverIds.Count > 1)
+                            {
+                                <button class="btn btn-outline-danger btn-sm px-3"
+                                        @onclick="() => _dnfDriverIds.RemoveAt(idx)">
+                                    ✕
+                                </button>
+                            }
+                        </div>
+                    }
+                    <button class="btn btn-outline-secondary btn-sm mt-1"
+                            @onclick="() => _dnfDriverIds.Add(0)">
+                        + Dodaj DNF vozača
+                    </button>
+                    <div class="form-text text-muted mt-1">
+                        Korisnici koji su prognozirali bilo kojeg od ovih vozača osvajaju bodove.
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">⚡ Fastest Lap</label>
@@ -153,7 +176,7 @@ else
                         }
                     </select>
                 </div>
-                <div class="col-md-6">
+                @* <div class="col-md-6">
                     <label class="form-label">🏅 Scored Points</label>
                     <select class="form-select fenio-select" @bind="_extras.ScoredPointsDriverId">
                         <option value="">– Odaberi –</option>
@@ -162,7 +185,7 @@ else
                             <option value="@d.Id">@d.FullName (@d.Code)</option>
                         }
                     </select>
-                </div>
+                </div> *@
                 <div class="col-md-6">
                     <label class="form-label">🔧 Fastest Pit Stop</label>
                     <select class="form-select fenio-select" @bind="_extras.FastestPitStopDriverId">
@@ -212,6 +235,7 @@ else
     private AdminExtrasForm _extras = new();
     private bool _loading = true, _saving, _saved;
     private string? _error;
+    private List<int> _dnfDriverIds = new() { 0 }; // počni s jednim praznim
 
     protected override async Task OnInitializedAsync()
     {
@@ -231,9 +255,10 @@ else
                     _sprintPositions[r.Position - 1] = r.DriverId;
             if (existing.Extras != null)
             {
-                _extras.DnfDriverId = existing.Extras.DnfDriver?.Id;
+                _dnfDriverIds = existing.Extras.DnfDrivers.Select(d => d.Id).ToList();
+                if (_dnfDriverIds.Count == 0) _dnfDriverIds.Add(0);
                 _extras.FastestLapDriverId = existing.Extras.FastestLapDriver?.Id;
-                _extras.ScoredPointsDriverId = existing.Extras.ScoredPointsDriver?.Id;
+                // _extras.ScoredPointsDriverId = existing.Extras.ScoredPointsDriver?.Id;
                 _extras.FastestPitStopDriverId = existing.Extras.FastestPitStopDriver?.Id;
                 _extras.DriverOfTheDayId = existing.Extras.DriverOfTheDay?.Id;
                 _extras.SafetyCarCount = existing.Extras.SafetyCarCount;
@@ -260,11 +285,11 @@ else
             SprintPositions = _race?.HasSprint == true
                 ? _sprintPositions.Select((d, i) => new Models.RaceResultEntryDto { Position = i + 1, DriverId = d }).ToList()
                 : null,
-            Extras = new Models.RaceExtrasDto
+            Extras = new Models.AdminRaceExtrasDto
             {
-                DnfDriverId = _extras.DnfDriverId,
+                DnfDriverIds = _dnfDriverIds.Where(id => id > 0).Distinct().ToList(),
                 FastestLapDriverId = _extras.FastestLapDriverId,
-                ScoredPointsDriverId = _extras.ScoredPointsDriverId,
+                // ScoredPointsDriverId = _extras.ScoredPointsDriverId,
                 FastestPitStopDriverId = _extras.FastestPitStopDriverId,
                 DriverOfTheDayId = _extras.DriverOfTheDayId,
                 SafetyCarCount = _extras.SafetyCarCount
@@ -279,9 +304,9 @@ else
 
     private class AdminExtrasForm
     {
-        public int? DnfDriverId { get; set; }
+        // public int? DnfDriverId { get; set; }
         public int? FastestLapDriverId { get; set; }
-        public int? ScoredPointsDriverId { get; set; }
+        // public int? ScoredPointsDriverId { get; set; }
         public int? FastestPitStopDriverId { get; set; }
         public int? DriverOfTheDayId { get; set; }
         public int SafetyCarCount { get; set; }

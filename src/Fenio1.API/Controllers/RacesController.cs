@@ -98,13 +98,20 @@ public class RacesController : ControllerBase
             .OrderBy(r => r.Position)
             .ToListAsync() : null;
 
+
         var extra = await _db.RaceExtras
-            .Include(e => e.DnfDriver)
             .Include(e => e.FastestLapDriver)
-            .Include(e => e.ScoredPointsDriver)
+            //.Include(e => e.ScoredPointsDriver)
             .Include(e => e.FastestPitStopDriver)
             .Include(e => e.DriverOfTheDay)
             .FirstOrDefaultAsync(e => e.RaceId == id);
+
+        // NOVO - učitaj DNF listu zasebno
+        var dnfEntries = await _db.RaceDnfEntries
+            .Include(d => d.Driver)
+            .Where(d => d.RaceId == id)
+            .ToListAsync();
+       
 
         return Ok(new RaceResultsDto(
             id,
@@ -112,13 +119,16 @@ public class RacesController : ControllerBase
             raceResults.Select(r => new RacePositionDetailDto(r.Position, r.DriverId, r.Driver.FullName, r.Driver.Code, r.DidNotFinish)).ToList(),
             qualResults.Select(r => new QualifyingPositionDetailDto(r.Position, r.DriverId, r.Driver.FullName, r.Driver.Code)).ToList(),
             sprintResults?.Select(r => new SprintPositionDetailDto(r.Position, r.DriverId, r.Driver.FullName, r.Driver.Code)).ToList(),
-            extra == null ? null : new RaceExtraDetailDto(
-                extra.DnfDriver == null ? null : new DriverSummaryDto(extra.DnfDriver.Id, extra.DnfDriver.FullName, extra.DnfDriver.Code, extra.DnfDriver.DriverNumber, null),
-                extra.FastestLapDriver == null ? null : new DriverSummaryDto(extra.FastestLapDriver.Id, extra.FastestLapDriver.FullName, extra.FastestLapDriver.Code, extra.FastestLapDriver.DriverNumber, null),
-                extra.ScoredPointsDriver == null ? null : new DriverSummaryDto(extra.ScoredPointsDriver.Id, extra.ScoredPointsDriver.FullName, extra.ScoredPointsDriver.Code, extra.ScoredPointsDriver.DriverNumber, null),
-                extra.FastestPitStopDriver == null ? null : new DriverSummaryDto(extra.FastestPitStopDriver.Id, extra.FastestPitStopDriver.FullName, extra.FastestPitStopDriver.Code, extra.FastestPitStopDriver.DriverNumber, null),
-                extra.DriverOfTheDay == null ? null : new DriverSummaryDto(extra.DriverOfTheDay.Id, extra.DriverOfTheDay.FullName, extra.DriverOfTheDay.Code, extra.DriverOfTheDay.DriverNumber, null),
-                extra.SafetyCarCount
+            extra == null && !dnfEntries.Any() ? null : new RaceExtraDetailDto(
+                dnfEntries.Select(d => new DriverSummaryDto(
+                d.Driver.Id, d.Driver.FullName, d.Driver.Code, d.Driver.DriverNumber, null
+                )).ToList(),
+                //extra.DnfDriver == null ? null : new DriverSummaryDto(extra.DnfDriver.Id, extra.DnfDriver.FullName, extra.DnfDriver.Code, extra.DnfDriver.DriverNumber, null),
+                extra?.FastestLapDriver == null ? null : new DriverSummaryDto(extra.FastestLapDriver.Id, extra.FastestLapDriver.FullName, extra.FastestLapDriver.Code, extra.FastestLapDriver.DriverNumber, null),
+                //extra.ScoredPointsDriver == null ? null : new DriverSummaryDto(extra.ScoredPointsDriver.Id, extra.ScoredPointsDriver.FullName, extra.ScoredPointsDriver.Code, extra.ScoredPointsDriver.DriverNumber, null),
+                extra?.FastestPitStopDriver == null ? null : new DriverSummaryDto(extra.FastestPitStopDriver.Id, extra.FastestPitStopDriver.FullName, extra.FastestPitStopDriver.Code, extra.FastestPitStopDriver.DriverNumber, null),
+                extra?.DriverOfTheDay == null ? null : new DriverSummaryDto(extra.DriverOfTheDay.Id, extra.DriverOfTheDay.FullName, extra.DriverOfTheDay.Code, extra.DriverOfTheDay.DriverNumber, null),
+                extra?.SafetyCarCount ?? 0
             )
         ));
     }
@@ -237,13 +247,15 @@ public class RacesController : ControllerBase
         var oldQualResults = await _db.QualifyingResults.Where(r => r.RaceId == id).ToListAsync();
         var oldSprintResults = await _db.SprintResults.Where(r => r.RaceId == id).ToListAsync();
         var oldExtras = await _db.RaceExtras.Where(r => r.RaceId == id).ToListAsync();
+        var oldDnf = await _db.RaceDnfEntries.Where(r => r.RaceId == id).ToListAsync(); // NOVO
 
         _db.RaceResults.RemoveRange(oldRaceResults);
         _db.QualifyingResults.RemoveRange(oldQualResults);
         _db.SprintResults.RemoveRange(oldSprintResults);
         _db.RaceExtras.RemoveRange(oldExtras);
+        _db.RaceDnfEntries.RemoveRange(oldDnf); // NOVO
 
-        // Unesi nove rezultate utrke
+        // Unesi top 10 rezultate utrke (bez DNF-a ovdje)
         foreach (var pos in request.RacePositions)
         {
             _db.RaceResults.Add(new RaceResult
@@ -255,19 +267,20 @@ public class RacesController : ControllerBase
             });
         }
 
-        // Unesi DNF vozača iz extrasa kao RaceResult s pozicijom iza 10. mjesta
-        if (request.Extras.DnfDriverId.HasValue)
+        // Unesi DNF listu u zasebnu tablicu (admin može unijeti više vozača)
+        var validDnfIds = (request.Extras.DnfDriverIds ?? new List<int>())
+            .Where(dId => dId > 0)
+            .Distinct()
+            .ToList();
+
+        foreach (var driverId in validDnfIds)
         {
-            var dnfPos = request.RacePositions.Count + 1;
-            _db.RaceResults.Add(new RaceResult
+            _db.RaceDnfEntries.Add(new RaceDnfEntry
             {
                 RaceId = id,
-                DriverId = request.Extras.DnfDriverId.Value,
-                Position = dnfPos,
-                DidNotFinish = true
+                DriverId = driverId
             });
         }
-
         // Unesi kvalifikacije
         foreach (var pos in request.QualifyingPositions)
         {
@@ -297,9 +310,9 @@ public class RacesController : ControllerBase
         _db.RaceExtras.Add(new RaceExtra
         {
             RaceId = id,
-            DnfDriverId = request.Extras.DnfDriverId,
+            //DnfDriverId = request.Extras.DnfDriverId,
             FastestLapDriverId = request.Extras.FastestLapDriverId,
-            ScoredPointsDriverId = request.Extras.ScoredPointsDriverId,
+            //ScoredPointsDriverId = request.Extras.ScoredPointsDriverId,
             FastestPitStopDriverId = request.Extras.FastestPitStopDriverId,
             DriverOfTheDayId = request.Extras.DriverOfTheDayId,
             SafetyCarCount = request.Extras.SafetyCarCount

@@ -26,6 +26,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<DriverStanding> DriverStandings => Set<DriverStanding>();
     public DbSet<ConstructorStanding> ConstructorStandings => Set<ConstructorStanding>();
     public DbSet<PredictionLeaderboard> PredictionLeaderboards => Set<PredictionLeaderboard>();
+    public DbSet<RaceDnfEntry> RaceDnfEntries => Set<RaceDnfEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -175,9 +176,9 @@ public class AppDbContext : DbContext, IAppDbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Nullable FK-ovi za vozače - bez kaskadnog brisanja
-            e.HasOne(r => r.DnfDriver).WithMany().HasForeignKey(r => r.DnfDriverId).OnDelete(DeleteBehavior.SetNull);
+            //e.HasOne(r => r.DnfDriver).WithMany().HasForeignKey(r => r.DnfDriverId).OnDelete(DeleteBehavior.SetNull);
             e.HasOne(r => r.FastestLapDriver).WithMany().HasForeignKey(r => r.FastestLapDriverId).OnDelete(DeleteBehavior.SetNull);
-            e.HasOne(r => r.ScoredPointsDriver).WithMany().HasForeignKey(r => r.ScoredPointsDriverId).OnDelete(DeleteBehavior.SetNull);
+            //e.HasOne(r => r.ScoredPointsDriver).WithMany().HasForeignKey(r => r.ScoredPointsDriverId).OnDelete(DeleteBehavior.SetNull);
             e.HasOne(r => r.FastestPitStopDriver).WithMany().HasForeignKey(r => r.FastestPitStopDriverId).OnDelete(DeleteBehavior.SetNull);
             e.HasOne(r => r.DriverOfTheDay).WithMany().HasForeignKey(r => r.DriverOfTheDayId).OnDelete(DeleteBehavior.SetNull);
         });
@@ -276,6 +277,23 @@ public class AppDbContext : DbContext, IAppDbContext
 
             e.HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(p => p.Season).WithMany().HasForeignKey(p => p.SeasonId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<RaceDnfEntry>(e =>
+        {
+            e.HasKey(d => d.Id);
+            // Isti vozač može biti DNF samo jednom po utrci
+            e.HasIndex(d => new { d.RaceId, d.DriverId }).IsUnique();
+
+            e.HasOne(d => d.Race)
+                .WithMany(r => r.DnfEntries)
+                .HasForeignKey(d => d.RaceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(d => d.Driver)
+                .WithMany()
+                .HasForeignKey(d => d.DriverId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Seed data

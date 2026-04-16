@@ -77,9 +77,9 @@ public record QualifyingResultEntryDto(int Position, int DriverId);
 public record SprintResultEntryDto(int Position, int DriverId);
 
 public record RaceExtrasDto(
-    int? DnfDriverId,
+    List<int> DnfDriverIds,        // Admin unosi listu DNF vozača (može biti više)
     int? FastestLapDriverId,
-    int? ScoredPointsDriverId,
+    // ScoredPointsDriverId se NE unosi - automatski se gleda iz top 10
     int? FastestPitStopDriverId,
     int? DriverOfTheDayId,
     int SafetyCarCount
@@ -110,9 +110,9 @@ public record QualifyingPositionDetailDto(int Position, int DriverId, string Dri
 public record SprintPositionDetailDto(int Position, int DriverId, string DriverName, string DriverCode);
 
 public record RaceExtraDetailDto(
-    DriverSummaryDto? DnfDriver,
+    List<DriverSummaryDto> DnfDrivers,          // lista DNF vozača
     DriverSummaryDto? FastestLapDriver,
-    DriverSummaryDto? ScoredPointsDriver,
+    //DriverSummaryDto? ScoredPointsDriver,
     DriverSummaryDto? FastestPitStopDriver,
     DriverSummaryDto? DriverOfTheDay,
     int SafetyCarCount

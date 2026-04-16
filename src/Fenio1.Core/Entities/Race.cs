@@ -29,6 +29,8 @@ public class Race
     public ICollection<SprintResult> SprintResults { get; set; } = new List<SprintResult>();
     public ICollection<RaceExtra> RaceExtras { get; set; } = new List<RaceExtra>();
     public ICollection<Prediction> Predictions { get; set; } = new List<Prediction>();
+    // Dodaj u Race entity
+    public ICollection<RaceDnfEntry> DnfEntries { get; set; } = new List<RaceDnfEntry>();
 }
 
 public enum RaceStatus

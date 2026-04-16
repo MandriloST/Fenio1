@@ -45,16 +45,16 @@ public class RaceExtra
     public Race Race { get; set; } = null!;
 
     // Vozač koji nije završio (DNF)
-    public int? DnfDriverId { get; set; }
-    public Driver? DnfDriver { get; set; }
+    //public int? DnfDriverId { get; set; }
+    //public Driver? DnfDriver { get; set; }
 
     // Vozač koji je postigao najbrži krug
     public int? FastestLapDriverId { get; set; }
     public Driver? FastestLapDriver { get; set; }
 
     // Vozač koji je ubilježio body (Scored Points - za prognoziranje tko će imati bodove)
-    public int? ScoredPointsDriverId { get; set; }
-    public Driver? ScoredPointsDriver { get; set; }
+    //public int? ScoredPointsDriverId { get; set; }
+    //public Driver? ScoredPointsDriver { get; set; }
 
     // Vozač koji je imao najbrži pit stop
     public int? FastestPitStopDriverId { get; set; }
@@ -66,4 +66,17 @@ public class RaceExtra
 
     // Broj Safety Car izlazaka
     public int SafetyCarCount { get; set; } = 0;
+}
+
+/// <summary>
+/// Jedan unos DNF vozača (admin može unijeti više)
+/// </summary>
+public class RaceDnfEntry
+{
+    public int Id { get; set; }
+    public int RaceId { get; set; }
+    public Race Race { get; set; } = null!;
+    public int DriverId { get; set; }
+    public Driver Driver { get; set; } = null!;
+    public string? Reason { get; set; } // opcionalno: "Crash", "Engine", itd.
 }
