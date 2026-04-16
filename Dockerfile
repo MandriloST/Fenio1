@@ -17,16 +17,16 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
-# SQLite baza će biti u /app/data (persistent volume na Railway)
-ENV ConnectionStrings__DefaultConnection="Data Source=/app/data/fenio1.db"
 ENV ASPNETCORE_URLS="http://+:8080"
 ENV ASPNETCORE_ENVIRONMENT="Production"
+ENV SQLITE_DB_PATH="/app/data/fenio1.db"
 
 EXPOSE 8080
 
-# Kreira /data direktorij ako ne postoji
+# Kreiraj /app/data direktorij
 RUN mkdir -p /app/data
 
-COPY src/Fenio1.API/fenio1.db /app/data/fenio1.db
+# Kopiraj bazu ako postoji u source (ako ne postoji, EnsureCreated će je kreirati)
+COPY src/Fenio1.API/fenio1.d[b] /app/data/
 
 ENTRYPOINT ["dotnet", "Fenio1.API.dll"]
