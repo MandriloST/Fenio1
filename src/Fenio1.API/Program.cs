@@ -143,11 +143,26 @@ builder.Services.AddSwaggerGen(c =>
 // ========================
 //  CORS (za frontend dev)
 // ========================
+
+// Zamijeni postojeći CORS blok s ovim:
+var allowedOrigins = builder.Configuration["Cors__AllowedOrigins"]
+    ?? "http://localhost:5001";
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    options.AddPolicy("AllowFrontend", policy =>
+        policy.WithOrigins(
+                allowedOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
 });
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowAll", policy =>
+//        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+//});
 
 var app = builder.Build();
 
@@ -155,6 +170,7 @@ var app = builder.Build();
 //  MIDDLEWARE
 // ========================
 app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseCors("AllowFrontend");
 
 // Swagger dostupan u svim environmentima
 app.UseSwagger();
