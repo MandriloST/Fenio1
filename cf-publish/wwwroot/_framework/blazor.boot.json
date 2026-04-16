@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "Fenio1.UI",
   "resources": {
-    "hash": "sha256-ZDDmFoT77+O6nw0M4dHp06M8lFMQHBcFMPnX5Jfryks=",
+    "hash": "sha256-8qClMt/TFCtO1c9H/tSj/b/e05FaS+UCRehYj4AKirA=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-nVB+IIrEMZyzYc18/q6Ztgcx9N4PFM4b0KiWbViPINI="
     },
@@ -9,7 +9,7 @@
       "dotnet.runtime.js": "sha256-44Vu7OSX4JP89eoc3oTYbYfC5C7USoIWuCw1W9IG6N4="
     },
     "wasmNative": {
-      "dotnet.native.wasm": "sha256-3o4nmCMG5ylk0bWmVPHNGhxHFSLNpLEPWAhkQY5gX34="
+      "dotnet.native.wasm": "sha256-IOmfSGmJtPcGcOQ5qUu3KkWpgkLYFSXmsWD1+Y3wYWo="
     },
     "icu": {
       "icudt_CJK.dat": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
@@ -19,7 +19,7 @@
     "coreAssembly": {},
     "assembly": {
       "Blazored.LocalStorage.wasm": "sha256-OaMAAd5n7ORfyur5e3QIyEVKJ76MKIvwbg7/icnnYcU=",
-      "Fenio1.UI.wasm": "sha256-u6oRjibVbAqgNbJ8a3Go82OiVgc4DuYXVnJY5EB4nQQ=",
+      "Fenio1.UI.wasm": "sha256-6VFgNwDKm2jStKlZk3EpO8Ac16O4V41ytYc1wml4Nv0=",
       "Microsoft.AspNetCore.Authorization.wasm": "sha256-y/dUKnm1wUQp24Zw1Nm2ZMnaDxmufY8d3MDa4RNtlLE=",
       "Microsoft.AspNetCore.Components.Authorization.wasm": "sha256-JjiMiKAGWjsOGDM+k3hDQ5y3vEBdb451H1zOjZLpI00=",
       "Microsoft.AspNetCore.Components.wasm": "sha256-xlEu6xOKXBrzuxnADoZ7qnK7lajAwuVfQcXddr97PvE=",
@@ -52,7 +52,7 @@
       "System.Net.Http.Json.wasm": "sha256-iRRxOAdmpOc3uM8KPOd7TyNyCU8SMMzUF0NGJI5SvuI=",
       "System.Net.Http.wasm": "sha256-LmeB3ggeEN4eGN/qYBwJIeUzAVB5idEvX4jf7mJ0p6o=",
       "System.Net.Primitives.wasm": "sha256-vdV1PnrTPNBQ5fx1cGWUGdn2ESAnPiINqp4N0nfYv6I=",
-      "System.Private.CoreLib.wasm": "sha256-Qxjh64jSa3SttHC3/U4N1RKBJaF6REF/YjzeEQGYGpE=",
+      "System.Private.CoreLib.wasm": "sha256-mnlDs97tm5qnPPG65BEerBMZmBOpv/K1ZpiZd1oRxn8=",
       "System.Private.Uri.wasm": "sha256-AG+mhutx9IuxuOfz4ePWMyeQn8IzyL1qUfJMHd2QhO0=",
       "System.Runtime.InteropServices.JavaScript.wasm": "sha256-rWpxLdbCTgRFMVhNwNZAh2/aGhe8+2agnOvP7N/1lD0=",
       "System.Runtime.wasm": "sha256-WPNZ66WZ4ibmyfEMy4dytns8qXnAHUvKNVMzJDwlnNA=",
