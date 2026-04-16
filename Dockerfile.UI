@@ -1,0 +1,18 @@
+# Fenio1 UI – Blazor WebAssembly za Netlify/Vercel/Railway
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /app
+
+COPY Fenio1.sln ./
+COPY src/Fenio1.UI/Fenio1.UI.csproj src/Fenio1.UI/
+
+RUN dotnet restore src/Fenio1.UI/Fenio1.UI.csproj
+
+COPY src/Fenio1.UI/ src/Fenio1.UI/
+RUN dotnet publish src/Fenio1.UI/Fenio1.UI.csproj -c Release -o /app/publish
+
+# nginx za statički hosting
+FROM nginx:alpine
+COPY --from=build /app/publish/wwwroot /usr/share/nginx/html
+COPY src/Fenio1.UI/nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
