@@ -120,15 +120,17 @@ var app = builder.Build();
 // ========================
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fenio1 API v1");
         c.RoutePrefix = string.Empty; // Swagger na root URL-u
     });
-}
+//}
+
+
 
 app.UseCors("AllowAll");
 app.UseAuthentication();
