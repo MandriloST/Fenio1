@@ -27,4 +27,6 @@ EXPOSE 8080
 # Kreira /data direktorij ako ne postoji
 RUN mkdir -p /app/data
 
+COPY src/Fenio1.API/fenio1.db /app/data/fenio1.db
+
 ENTRYPOINT ["dotnet", "Fenio1.API.dll"]
