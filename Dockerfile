@@ -26,7 +26,4 @@ EXPOSE 8080
 # Kreiraj /app/data direktorij
 RUN mkdir -p /app/data
 
-# Kopiraj bazu ako postoji u source (ako ne postoji, EnsureCreated će je kreirati)
-COPY src/Fenio1.API/fenio1.d[b] /app/data/
-
 ENTRYPOINT ["dotnet", "Fenio1.API.dll"]
