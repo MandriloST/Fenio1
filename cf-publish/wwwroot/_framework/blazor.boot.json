@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "Fenio1.UI",
   "resources": {
-    "hash": "sha256-8qClMt/TFCtO1c9H/tSj/b/e05FaS+UCRehYj4AKirA=",
+    "hash": "sha256-sy8iDeKhhe/a1h6VVk5q40x0bEyTso10IKGEbue24aM=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-nVB+IIrEMZyzYc18/q6Ztgcx9N4PFM4b0KiWbViPINI="
     },
@@ -19,7 +19,7 @@
     "coreAssembly": {},
     "assembly": {
       "Blazored.LocalStorage.wasm": "sha256-OaMAAd5n7ORfyur5e3QIyEVKJ76MKIvwbg7/icnnYcU=",
-      "Fenio1.UI.wasm": "sha256-6VFgNwDKm2jStKlZk3EpO8Ac16O4V41ytYc1wml4Nv0=",
+      "Fenio1.UI.wasm": "sha256-PSN1i4CwkXKDQ3tTfX5UXK02KVUtOBx3UIoFQbR5BYU=",
       "Microsoft.AspNetCore.Authorization.wasm": "sha256-y/dUKnm1wUQp24Zw1Nm2ZMnaDxmufY8d3MDa4RNtlLE=",
       "Microsoft.AspNetCore.Components.Authorization.wasm": "sha256-JjiMiKAGWjsOGDM+k3hDQ5y3vEBdb451H1zOjZLpI00=",
       "Microsoft.AspNetCore.Components.wasm": "sha256-xlEu6xOKXBrzuxnADoZ7qnK7lajAwuVfQcXddr97PvE=",

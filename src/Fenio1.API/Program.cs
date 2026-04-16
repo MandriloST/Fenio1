@@ -146,13 +146,16 @@ builder.Services.AddSwaggerGen(c =>
 
 // Zamijeni postojeći CORS blok s ovim:
 var allowedOrigins = builder.Configuration["Cors__AllowedOrigins"]
-    ?? "http://localhost:5001";
+    ?? "https://fenio1.pages.dev";
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
         policy.WithOrigins(
-                allowedOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                allowedOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Append("http://localhost:5001")
+                .Append("https://localhost:7200")
+                .ToArray())
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials());
@@ -170,7 +173,6 @@ var app = builder.Build();
 //  MIDDLEWARE
 // ========================
 app.UseMiddleware<ErrorHandlingMiddleware>();
-app.UseCors("AllowFrontend");
 
 // Swagger dostupan u svim environmentima
 app.UseSwagger();
@@ -180,7 +182,8 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = string.Empty;
 });
 
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontend");
+//app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
