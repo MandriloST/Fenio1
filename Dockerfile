@@ -19,7 +19,7 @@ COPY --from=build /app/publish .
 
 ENV ASPNETCORE_URLS="http://+:8080"
 ENV ASPNETCORE_ENVIRONMENT="Production"
-ENV SQLITE_DB_PATH="/app/data/fenio1.db"
+ENV SQLITE_DB_PATH="/app/data/fenio1_1.db"
 
 EXPOSE 8080
 

@@ -38,8 +38,8 @@ else
         // Fallback
         var isProduction = builder.Environment.IsProduction();
         connectionString = isProduction
-            ? "Data Source=/app/data/fenio1.db"
-            : "Data Source=fenio1.db";
+            ? "Data Source=/app/data/fenio1_1.db"
+            : "Data Source=fenio1_1.db";
     }
 }
 
