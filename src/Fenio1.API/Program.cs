@@ -14,9 +14,45 @@ var builder = WebApplication.CreateBuilder(args);
 // ========================
 //  DATABASE - EF Core + SQLite
 // ========================
+
+// Logika za connection string:
+// 1. Provjeri environment varijablu SQLITE_DB_PATH (najjednostavnije na Railway)
+// 2. Provjeri konfiguraciju ConnectionStrings:DefaultConnection
+// 3. Fallback: u produkciji /app/data/fenio1.db, lokalno fenio1.db
+var dbPath = Environment.GetEnvironmentVariable("SQLITE_DB_PATH");
+
+string connectionString;
+if (!string.IsNullOrEmpty(dbPath))
+{
+    connectionString = $"Data Source={dbPath}";
+}
+else
+{
+    var configConnStr = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (!string.IsNullOrEmpty(configConnStr))
+    {
+        connectionString = configConnStr;
+    }
+    else
+    {
+        // Fallback
+        var isProduction = builder.Environment.IsProduction();
+        connectionString = isProduction
+            ? "Data Source=/app/data/fenio1.db"
+            : "Data Source=fenio1.db";
+    }
+}
+
+// Osiguraj da direktorij postoji
+var dbFile = connectionString.Replace("Data Source=", "").Trim();
+var dbDir = Path.GetDirectoryName(dbFile);
+if (!string.IsNullOrEmpty(dbDir) && !Directory.Exists(dbDir))
+{
+    Directory.CreateDirectory(dbDir);
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? "Data Source=fenio1.db"));
+    options.UseSqlite(connectionString));
 
 // IAppDbContext interface za ScoringService
 builder.Services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
@@ -120,17 +156,13 @@ var app = builder.Build();
 // ========================
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
-//if (app.Environment.IsDevelopment())
-//{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fenio1 API v1");
-        c.RoutePrefix = string.Empty; // Swagger na root URL-u
-    });
-//}
-
-
+// Swagger dostupan u svim environmentima
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fenio1 API v1");
+    c.RoutePrefix = string.Empty;
+});
 
 app.UseCors("AllowAll");
 app.UseAuthentication();
@@ -138,12 +170,39 @@ app.UseAuthorization();
 app.MapControllers();
 
 // ========================
-//  AUTO MIGRATE + SEED
+//  DATABASE INICIJALIZACIJA
 // ========================
-//using (var scope = app.Services.CreateScope())
-//{
-//    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//    db.Database.Migrate();
-//}
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        // Provjeri može li se spojiti na bazu
+        var canConnect = await db.Database.CanConnectAsync();
+        logger.LogInformation("Spajanje na bazu: {Status}", canConnect ? "OK" : "GREŠKA");
+
+        if (canConnect)
+        {
+            // Baza postoji - provjeri ima li Users tablicu
+            var usersExist = await db.Users.AnyAsync();
+            logger.LogInformation("Baza pronađena, korisnika: {Count}",
+                await db.Users.CountAsync());
+        }
+        else
+        {
+            // Baza ne postoji - kreiraj je s EnsureCreated (uključuje seed)
+            logger.LogInformation("Kreiram novu bazu...");
+            await db.Database.EnsureCreatedAsync();
+            logger.LogInformation("Baza kreirana s seed podacima.");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Greška pri inicijalizaciji baze: {Message}", ex.Message);
+        // Ne prekidaj startup - možda baza postoji ali ima manji problem
+    }
+}
 
 app.Run();
