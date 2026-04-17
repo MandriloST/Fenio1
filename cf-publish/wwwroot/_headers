@@ -1,5 +1,9 @@
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /_framework/*
-  Cache-Control: no-cache, must-revalidate
+  Cache-Control: public, max-age=31556952, immutable
+
 
 /appsettings.json
   Cache-Control: no-cache
