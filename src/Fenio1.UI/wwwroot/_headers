@@ -1,3 +1,8 @@
+/_framework/*
+  Cache-Control: no-cache, must-revalidate
+
+/appsettings.json
+  Cache-Control: no-cache
+
 /*.json
-  Content-Type: application/json
   Cache-Control: no-cache
