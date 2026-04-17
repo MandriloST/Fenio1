@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fenio1 – Formula 1 Prognoze</title>
+    <base href="/" />
+
+    <!-- Bootstrap 5 dark -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+
+    <!-- Custom Fenio1 styles -->
+    <link rel="stylesheet" href="css/app.css" />
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+</head>
+<body class="fenio-body">
+
+    <div id="app">
+        <!-- Loading splash -->
+        <div id="fenio-splash" class="d-flex flex-column align-items-center justify-content-center vh-100">
+            <div class="mb-3">
+                <span style="font-size:3rem;font-weight:900;letter-spacing:-2px">
+                    <span style="color:#dc3545">F</span>ENIO<span style="color:#dc3545">1</span>
+                </span>
+            </div>
+            <div class="spinner-border text-danger" role="status">
+                <span class="visually-hidden">Učitavanje...</span>
+            </div>
+            <p class="text-muted mt-3 small">Učitavanje aplikacije...</p>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui" class="alert alert-danger m-3" style="display:none">
+        Greška u aplikaciji.
+        <a href="" class="alert-link">Osvježi stranicu</a>
+        <a class="dismiss ms-2">✕</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

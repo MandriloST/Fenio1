@@ -1,0 +1,352 @@
+/* ===========================
+   FENIO1 – F1 Dark Theme
+   =========================== */
+
+:root {
+    --fenio-bg: #0d0d0d;
+    --fenio-surface: #1a1a1a;
+    --fenio-surface-2: #242424;
+    --fenio-border: #2e2e2e;
+    --fenio-red: #dc3545;
+    --fenio-red-hover: #b02a37;
+    --fenio-text: #e8e8e8;
+    --fenio-text-muted: #888;
+    --fenio-navbar-h: 56px;
+}
+
+/* ---- BASE ---- */
+html, body {
+    background-color: var(--fenio-bg) !important;
+    color: var(--fenio-text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+}
+
+a {
+    color: var(--fenio-red);
+}
+
+    a:hover {
+        color: var(--fenio-red-hover);
+    }
+
+/* ---- LAYOUT ---- */
+.fenio-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.fenio-main {
+    flex: 1;
+    padding-top: 1rem;
+}
+
+.fenio-footer {
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--fenio-border);
+    margin-top: 3rem;
+}
+
+/* ---- NAVBAR ---- */
+.fenio-navbar {
+    background-color: #111 !important;
+    border-bottom: 2px solid var(--fenio-red);
+    height: var(--fenio-navbar-h);
+}
+
+    .fenio-navbar .navbar-brand {
+        font-size: 1.4rem;
+        letter-spacing: 1px;
+    }
+
+    .fenio-navbar .nav-link {
+        color: #ccc !important;
+        font-size: 0.9rem;
+        transition: color 0.15s;
+    }
+
+        .fenio-navbar .nav-link:hover,
+        .fenio-navbar .nav-link.active {
+            color: #fff !important;
+        }
+
+    .fenio-navbar .dropdown-menu {
+        background-color: #1e1e1e;
+        border: 1px solid var(--fenio-border);
+    }
+
+    .fenio-navbar .dropdown-item {
+        color: #ccc;
+        font-size: 0.9rem;
+    }
+
+        .fenio-navbar .dropdown-item:hover {
+            background-color: var(--fenio-surface-2);
+            color: #fff;
+        }
+
+/* ---- CARDS ---- */
+.fenio-card {
+    background-color: var(--fenio-surface) !important;
+    border: 1px solid var(--fenio-border) !important;
+    border-radius: 8px;
+    color: var(--fenio-text);
+}
+
+    .fenio-card .card-header {
+        background-color: var(--fenio-surface-2) !important;
+        border-bottom: 1px solid var(--fenio-border);
+        color: var(--fenio-text);
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .fenio-card .card-footer {
+        background-color: var(--fenio-surface) !important;
+        border-top: 1px solid var(--fenio-border);
+    }
+
+    /* hover lift effect */
+    .fenio-card:hover {
+        border-color: #444 !important;
+        transition: border-color 0.2s;
+    }
+
+/* ---- TABLES ---- */
+.table-dark {
+    --bs-table-bg: transparent;
+    --bs-table-hover-bg: rgba(255,255,255,0.04);
+    color: var(--fenio-text);
+}
+
+    .table-dark thead th {
+        background-color: var(--fenio-surface-2);
+        border-bottom: 1px solid var(--fenio-border) !important;
+        color: var(--fenio-text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.6rem 0.75rem;
+    }
+
+    .table-dark td, .table-dark th {
+        border-color: var(--fenio-border) !important;
+        vertical-align: middle;
+    }
+
+/* ---- FORMS ---- */
+.fenio-select,
+.fenio-input,
+.form-control,
+.form-select {
+    background-color: var(--fenio-surface-2) !important;
+    border: 1px solid var(--fenio-border) !important;
+    color: var(--fenio-text) !important;
+    border-radius: 6px;
+}
+
+    .fenio-select:focus,
+    .fenio-input:focus,
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--fenio-red) !important;
+        box-shadow: 0 0 0 0.2rem rgba(220,53,69,0.2) !important;
+        outline: none;
+    }
+
+    .fenio-select option,
+    .form-select option {
+        background-color: var(--fenio-surface-2);
+        color: var(--fenio-text);
+    }
+
+.form-label {
+    color: #aaa;
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+}
+
+/* ---- BUTTONS ---- */
+.btn-danger {
+    background-color: var(--fenio-red);
+    border-color: var(--fenio-red);
+}
+
+    .btn-danger:hover {
+        background-color: var(--fenio-red-hover);
+        border-color: var(--fenio-red-hover);
+    }
+
+.btn-outline-danger {
+    color: var(--fenio-red);
+    border-color: var(--fenio-red);
+}
+
+    .btn-outline-danger:hover {
+        background-color: var(--fenio-red);
+        border-color: var(--fenio-red);
+        color: #fff;
+    }
+
+.btn-outline-secondary {
+    color: #888;
+    border-color: #444;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #2a2a2a;
+        border-color: #555;
+        color: #ccc;
+    }
+
+/* ---- ALERTS ---- */
+.alert-danger {
+    background-color: rgba(220,53,69,0.15);
+    border-color: rgba(220,53,69,0.4);
+    color: #f5c2c7;
+}
+
+.alert-success {
+    background-color: rgba(25,135,84,0.15);
+    border-color: rgba(25,135,84,0.4);
+    color: #a3cfbb;
+}
+
+.alert-info {
+    background-color: rgba(13,202,240,0.1);
+    border-color: rgba(13,202,240,0.3);
+    color: #9eeaf9;
+}
+
+.alert-secondary {
+    background-color: rgba(108,117,125,0.15);
+    border-color: rgba(108,117,125,0.3);
+    color: #adb5bd;
+}
+
+.alert-warning {
+    background-color: rgba(255,193,7,0.1);
+    border-color: rgba(255,193,7,0.3);
+    color: #ffecb5;
+}
+
+/* ---- BADGES ---- */
+.badge {
+    font-weight: 500;
+}
+
+/* ---- LOGIN PAGE ---- */
+.fenio-body {
+    background: radial-gradient(ellipse at top, #1a0a0a 0%, #0d0d0d 60%) !important;
+}
+
+/* ---- POSITION MEDALS ---- */
+.pos-1 {
+    color: #ffd700;
+}
+
+.pos-2 {
+    color: #c0c0c0;
+}
+
+.pos-3 {
+    color: #cd7f32;
+}
+
+/* ---- SPLASH SCREEN ---- */
+#fenio-splash {
+    background-color: var(--fenio-bg);
+}
+
+/* ---- SPINNER ---- */
+.spinner-border.text-danger {
+    color: var(--fenio-red) !important;
+}
+
+/* ---- SCROLLBAR ---- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--fenio-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 3px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #666;
+    }
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 576px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .fenio-card .card-body {
+        padding: 0.75rem;
+    }
+
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+}
+
+/* ---- INPUT TYPE COLOR FIX ---- */
+input[type="color"].form-control {
+    padding: 0.2rem;
+    width: 3rem;
+    cursor: pointer;
+}
+
+/* ---- FORM CHECK (CHECKBOX) ---- */
+.form-check-input:checked {
+    background-color: var(--fenio-red);
+    border-color: var(--fenio-red);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220,53,69,0.25);
+    border-color: var(--fenio-red);
+}
+
+.form-check-label {
+    color: var(--fenio-text);
+}
+
+/* ---- DROPDOWN MENU DARK ---- */
+.dropdown-menu-dark {
+    background-color: #1e1e1e !important;
+    border-color: var(--fenio-border) !important;
+}
+
+.dropdown-divider {
+    border-color: var(--fenio-border);
+}
+
+/* ===========================
+   RACE RESULTS SIDEBAR
+   =========================== */
+
+.list-group-item {
+    background-color: var(--fenio-surface-2) !important;
+    border-color: var(--fenio-border) !important;
+    color: var(--fenio-text) !important;
+    transition: background-color 0.15s;
+}
+
+    .list-group-item:hover {
+        background-color: rgba(220, 53, 69, 0.15) !important;
+    }
+
+.active-race {
+    background-color: rgba(220, 53, 69, 0.2) !important;
+    border-left: 3px solid var(--fenio-red) !important;
+}
