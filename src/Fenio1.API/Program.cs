@@ -19,40 +19,9 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Provjeri environment varijablu SQLITE_DB_PATH (najjednostavnije na Railway)
 // 2. Provjeri konfiguraciju ConnectionStrings:DefaultConnection
 // 3. Fallback: u produkciji /app/data/fenio1.db, lokalno fenio1.db
-var dbPath = Environment.GetEnvironmentVariable("SQLITE_DB_PATH");
-
-string connectionString;
-if (!string.IsNullOrEmpty(dbPath))
-{
-    connectionString = $"Data Source={dbPath}";
-}
-else
-{
-    var configConnStr = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (!string.IsNullOrEmpty(configConnStr))
-    {
-        connectionString = configConnStr;
-    }
-    else
-    {
-        // Fallback
-        var isProduction = builder.Environment.IsProduction();
-        connectionString = isProduction
-            ? "Data Source=/app/data/fenio1_1.db"
-            : "Data Source=fenio1_1.db";
-    }
-}
-
-// Osiguraj da direktorij postoji
-var dbFile = connectionString.Replace("Data Source=", "").Trim();
-var dbDir = Path.GetDirectoryName(dbFile);
-if (!string.IsNullOrEmpty(dbDir) && !Directory.Exists(dbDir))
-{
-    Directory.CreateDirectory(dbDir);
-}
-
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(connectionString));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? "Data Source=fenio1_1.db"));
 
 // IAppDbContext interface za ScoringService
 builder.Services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
@@ -144,28 +113,28 @@ builder.Services.AddSwaggerGen(c =>
 //  CORS (za frontend dev)
 // ========================
 
-// Zamijeni postojeći CORS blok s ovim:
-var allowedOrigins = builder.Configuration["Cors__AllowedOrigins"]
-    ?? "https://fenio1.pages.dev";
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins(
-                allowedOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Append("http://localhost:5001")
-                .Append("https://localhost:7200")
-                .ToArray())
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
-});
+//// Zamijeni postojeći CORS blok s ovim:
+//var allowedOrigins = builder.Configuration["Cors__AllowedOrigins"]
+//    ?? "https://fenio1.pages.dev";
 
 //builder.Services.AddCors(options =>
 //{
-//    options.AddPolicy("AllowAll", policy =>
-//        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+//    options.AddPolicy("AllowFrontend", policy =>
+//        policy.WithOrigins(
+//                allowedOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+//                .Append("http://localhost:5001")
+//                .Append("https://localhost:7200")
+//                .ToArray())
+//            .AllowAnyMethod()
+//            .AllowAnyHeader()
+//            .AllowCredentials());
 //});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+});
 
 var app = builder.Build();
 
@@ -182,8 +151,8 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = string.Empty;
 });
 
-app.UseCors("AllowFrontend");
-//app.UseCors("AllowAll");
+//app.UseCors("AllowFrontend");
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
