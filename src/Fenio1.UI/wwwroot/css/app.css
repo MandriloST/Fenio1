@@ -22,8 +22,13 @@ html, body {
     min-height: 100vh;
 }
 
-a { color: var(--fenio-red); }
-a:hover { color: var(--fenio-red-hover); }
+a {
+    color: var(--fenio-red);
+}
+
+    a:hover {
+        color: var(--fenio-red-hover);
+    }
 
 /* ---- LAYOUT ---- */
 .fenio-layout {
@@ -50,36 +55,36 @@ a:hover { color: var(--fenio-red-hover); }
     height: var(--fenio-navbar-h);
 }
 
-.fenio-navbar .navbar-brand {
-    font-size: 1.4rem;
-    letter-spacing: 1px;
-}
+    .fenio-navbar .navbar-brand {
+        font-size: 1.4rem;
+        letter-spacing: 1px;
+    }
 
-.fenio-navbar .nav-link {
-    color: #ccc !important;
-    font-size: 0.9rem;
-    transition: color 0.15s;
-}
+    .fenio-navbar .nav-link {
+        color: #ccc !important;
+        font-size: 0.9rem;
+        transition: color 0.15s;
+    }
 
-.fenio-navbar .nav-link:hover,
-.fenio-navbar .nav-link.active {
-    color: #fff !important;
-}
+        .fenio-navbar .nav-link:hover,
+        .fenio-navbar .nav-link.active {
+            color: #fff !important;
+        }
 
-.fenio-navbar .dropdown-menu {
-    background-color: #1e1e1e;
-    border: 1px solid var(--fenio-border);
-}
+    .fenio-navbar .dropdown-menu {
+        background-color: #1e1e1e;
+        border: 1px solid var(--fenio-border);
+    }
 
-.fenio-navbar .dropdown-item {
-    color: #ccc;
-    font-size: 0.9rem;
-}
+    .fenio-navbar .dropdown-item {
+        color: #ccc;
+        font-size: 0.9rem;
+    }
 
-.fenio-navbar .dropdown-item:hover {
-    background-color: var(--fenio-surface-2);
-    color: #fff;
-}
+        .fenio-navbar .dropdown-item:hover {
+            background-color: var(--fenio-surface-2);
+            color: #fff;
+        }
 
 /* ---- CARDS ---- */
 .fenio-card {
@@ -89,24 +94,24 @@ a:hover { color: var(--fenio-red-hover); }
     color: var(--fenio-text);
 }
 
-.fenio-card .card-header {
-    background-color: var(--fenio-surface-2) !important;
-    border-bottom: 1px solid var(--fenio-border);
-    color: var(--fenio-text);
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-}
+    .fenio-card .card-header {
+        background-color: var(--fenio-surface-2) !important;
+        border-bottom: 1px solid var(--fenio-border);
+        color: var(--fenio-text);
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
 
-.fenio-card .card-footer {
-    background-color: var(--fenio-surface) !important;
-    border-top: 1px solid var(--fenio-border);
-}
+    .fenio-card .card-footer {
+        background-color: var(--fenio-surface) !important;
+        border-top: 1px solid var(--fenio-border);
+    }
 
-/* hover lift effect */
-.fenio-card:hover {
-    border-color: #444 !important;
-    transition: border-color 0.2s;
-}
+    /* hover lift effect */
+    .fenio-card:hover {
+        border-color: #444 !important;
+        transition: border-color 0.2s;
+    }
 
 /* ---- TABLES ---- */
 .table-dark {
@@ -115,20 +120,20 @@ a:hover { color: var(--fenio-red-hover); }
     color: var(--fenio-text);
 }
 
-.table-dark thead th {
-    background-color: var(--fenio-surface-2);
-    border-bottom: 1px solid var(--fenio-border) !important;
-    color: var(--fenio-text-muted);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 0.6rem 0.75rem;
-}
+    .table-dark thead th {
+        background-color: var(--fenio-surface-2);
+        border-bottom: 1px solid var(--fenio-border) !important;
+        color: var(--fenio-text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.6rem 0.75rem;
+    }
 
-.table-dark td, .table-dark th {
-    border-color: var(--fenio-border) !important;
-    vertical-align: middle;
-}
+    .table-dark td, .table-dark th {
+        border-color: var(--fenio-border) !important;
+        vertical-align: middle;
+    }
 
 /* ---- FORMS ---- */
 .fenio-select,
@@ -141,20 +146,20 @@ a:hover { color: var(--fenio-red-hover); }
     border-radius: 6px;
 }
 
-.fenio-select:focus,
-.fenio-input:focus,
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--fenio-red) !important;
-    box-shadow: 0 0 0 0.2rem rgba(220,53,69,0.2) !important;
-    outline: none;
-}
+    .fenio-select:focus,
+    .fenio-input:focus,
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--fenio-red) !important;
+        box-shadow: 0 0 0 0.2rem rgba(220,53,69,0.2) !important;
+        outline: none;
+    }
 
-.fenio-select option,
-.form-select option {
-    background-color: var(--fenio-surface-2);
-    color: var(--fenio-text);
-}
+    .fenio-select option,
+    .form-select option {
+        background-color: var(--fenio-surface-2);
+        color: var(--fenio-text);
+    }
 
 .form-label {
     color: #aaa;
@@ -168,32 +173,32 @@ a:hover { color: var(--fenio-red-hover); }
     border-color: var(--fenio-red);
 }
 
-.btn-danger:hover {
-    background-color: var(--fenio-red-hover);
-    border-color: var(--fenio-red-hover);
-}
+    .btn-danger:hover {
+        background-color: var(--fenio-red-hover);
+        border-color: var(--fenio-red-hover);
+    }
 
 .btn-outline-danger {
     color: var(--fenio-red);
     border-color: var(--fenio-red);
 }
 
-.btn-outline-danger:hover {
-    background-color: var(--fenio-red);
-    border-color: var(--fenio-red);
-    color: #fff;
-}
+    .btn-outline-danger:hover {
+        background-color: var(--fenio-red);
+        border-color: var(--fenio-red);
+        color: #fff;
+    }
 
 .btn-outline-secondary {
     color: #888;
     border-color: #444;
 }
 
-.btn-outline-secondary:hover {
-    background-color: #2a2a2a;
-    border-color: #555;
-    color: #ccc;
-}
+    .btn-outline-secondary:hover {
+        background-color: #2a2a2a;
+        border-color: #555;
+        color: #ccc;
+    }
 
 /* ---- ALERTS ---- */
 .alert-danger {
@@ -237,9 +242,17 @@ a:hover { color: var(--fenio-red-hover); }
 }
 
 /* ---- POSITION MEDALS ---- */
-.pos-1 { color: #ffd700; }
-.pos-2 { color: #c0c0c0; }
-.pos-3 { color: #cd7f32; }
+.pos-1 {
+    color: #ffd700;
+}
+
+.pos-2 {
+    color: #c0c0c0;
+}
+
+.pos-3 {
+    color: #cd7f32;
+}
 
 /* ---- SPLASH SCREEN ---- */
 #fenio-splash {
@@ -252,17 +265,38 @@ a:hover { color: var(--fenio-red-hover); }
 }
 
 /* ---- SCROLLBAR ---- */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--fenio-bg); }
-::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #666; }
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--fenio-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 3px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #666;
+    }
 
 /* ---- RESPONSIVE ---- */
 @media (max-width: 576px) {
-    .container { padding-left: 1rem; padding-right: 1rem; }
-    .fenio-card .card-body { padding: 0.75rem; }
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
 
-    .table-responsive { font-size: 0.85rem; }
+    .fenio-card .card-body {
+        padding: 0.75rem;
+    }
+
+    .table-responsive {
+        font-size: 0.85rem;
+    }
 }
 
 /* ---- INPUT TYPE COLOR FIX ---- */
@@ -295,4 +329,24 @@ input[type="color"].form-control {
 
 .dropdown-divider {
     border-color: var(--fenio-border);
+}
+
+/* ===========================
+   RACE RESULTS SIDEBAR
+   =========================== */
+
+.list-group-item {
+    background-color: var(--fenio-surface-2) !important;
+    border-color: var(--fenio-border) !important;
+    color: var(--fenio-text) !important;
+    transition: background-color 0.15s;
+}
+
+    .list-group-item:hover {
+        background-color: rgba(220, 53, 69, 0.15) !important;
+    }
+
+.active-race {
+    background-color: rgba(220, 53, 69, 0.2) !important;
+    border-left: 3px solid var(--fenio-red) !important;
 }
